@@ -127,7 +127,7 @@
                   {{-- Date --}}
                   <div class="field">
                     <label>Tanggal</label>
-                    <input type="text" name="{{ $dateKey }}" value="{{ old($dateKey, $progress->{$dateKey}) }}" placeholder="YYYY-MM-DD" maxlength="10">
+                    <input type="date" name="{{ $dateKey }}" value="{{ old($dateKey, $progress->{$dateKey}) }}">
                   </div>
 
                   {{-- Step 8: keterangan --}}
@@ -141,9 +141,13 @@
                   {{-- Upload bukti (hanya muncul jika status = done) --}}
                   @if($i !== 7 && $i !== 8)
                     <div class="upload-zone" id="upload-{{ $i }}" data-step="{{ $i }}" style="{{ $current === 'done' ? '' : 'display:none' }}">
+                      <input type="hidden" name="uploaded_by{{ $i }}" id="uploaded-by-{{ $i }}" value="{{ $bukti?->uploaded_by ?? '' }}">
+                      @if($bukti && $bukti->uploaded_by)
+                        <p class="uploader-info">Uploaded by: {{ $bukti->uploaded_by }}</p>
+                      @endif
                       <div class="field">
                         <label>Upload Bukti</label>
-                        <input type="file" name="bukti{{ $i }}" accept=".jpg,.jpeg,.png,.pdf">
+                        <input type="file" name="bukti{{ $i }}" accept=".jpg,.jpeg,.png,.pdf" onchange="requestUploader({{ $i }})">
                       </div>
                       <div class="field">
                         <label>Keterangan</label>
@@ -245,6 +249,51 @@
       const b = document.getElementById('saveBtn');
       if (b) { b.disabled = true; b.textContent = 'Menyimpan...'; setTimeout(() => { b.disabled = false; b.textContent = 'Simpan Semua'; }, 3000); }
     });
+
+    // Uploader name modal
+    let pendingUploaderStep = null;
+
+    function requestUploader(step) {
+      const input = document.getElementById('uploaded-by-' + step);
+      if (input && input.value) return; // already has name
+      pendingUploaderStep = step;
+      document.getElementById('uploaderModal').style.display = 'flex';
+      document.getElementById('uploaderName').value = '';
+      document.getElementById('uploaderName').focus();
+    }
+
+    function confirmUploader() {
+      const name = document.getElementById('uploaderName').value.trim();
+      if (!name) { document.getElementById('uploaderName').focus(); return; }
+      const input = document.getElementById('uploaded-by-' + pendingUploaderStep);
+      if (input) input.value = name;
+      document.getElementById('uploaderModal').style.display = 'none';
+      pendingUploaderStep = null;
+    }
+
+    function cancelUploader() {
+      document.getElementById('uploaderModal').style.display = 'none';
+      pendingUploaderStep = null;
+    }
+
+    document.getElementById('uploaderName').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') { e.preventDefault(); confirmUploader(); }
+      if (e.key === 'Escape') cancelUploader();
+    });
   </script>
+
+  <!-- Uploader Name Modal -->
+  <div id="uploaderModal" class="uploader-overlay" style="display:none">
+    <div class="uploader-card">
+      <h3>Siapa yang upload?</h3>
+      <p class="uploader-hint">Masukkan nama lengkap</p>
+      <input type="text" id="uploaderName" placeholder="Nama lengkap" maxlength="100">
+      <div class="uploader-actions">
+        <button type="button" class="btn-ghost" onclick="cancelUploader()">Batal</button>
+        <button type="button" class="btn-primary" onclick="confirmUploader()">Simpan</button>
+      </div>
+    </div>
+  </div>
+
 </body>
 </html>

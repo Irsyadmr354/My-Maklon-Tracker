@@ -8,7 +8,7 @@ class Bukti extends Model
 {
     protected $table = 'bukti'; // tabel bukti
 
-    protected $fillable = ['user_id', 'path', 'keterangan', 'status', 'tanggal', 'step'];
+    protected $fillable = ['user_id', 'path', 'keterangan', 'status', 'tanggal', 'step', 'uploaded_by'];
 
     // app/Models/Bukti.php
     public function user()

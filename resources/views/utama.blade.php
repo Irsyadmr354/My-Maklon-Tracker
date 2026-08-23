@@ -91,6 +91,10 @@
                     data-popup-src="{{ route('bukti.show', $bukti->id) }}"
                     data-popup-desc="{{ $bukti->keterangan }}">Lihat Bukti</button>
                 @endif
+                @if($bukti->uploaded_by)
+                  <span class="uploaded-by">oleh {{ $bukti->uploaded_by }}</span>
+                @endif
+              @endif
               @endif
               @if($step === 7 && $bukti && $status === 'done')
                 <span class="badge badge-done">Terkirim via WhatsApp</span>

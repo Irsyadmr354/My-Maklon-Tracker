@@ -208,8 +208,9 @@ class UserController extends Controller
         foreach (array_keys($tahapan) as $i) {
             $rules["status{$i}"]     = 'nullable|in:done,on_progress,hold';
             $rules["tanggal{$i}"]    = 'nullable|date';
-            $rules["keterangan{$i}"] = 'nullable|string|max:255';
-            $rules["bukti{$i}"]      = 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048';
+            $rules["keterangan{$i}"]   = 'nullable|string|max:255';
+            $rules["uploaded_by{$i}"] = 'nullable|string|max:100';
+            $rules["bukti{$i}"]       = 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048';
         }
         $rules['user_id'] = 'nullable|integer|exists:users,id';
         $request->validate($rules);
@@ -252,9 +253,10 @@ class UserController extends Controller
                         $bukti->path = 'bukti/' . $tersimpan;
                     }
 
-                    $bukti->status     = $request->input("status{$i}", 'hold');
-                    $bukti->tanggal    = $request->input("tanggal{$i}");
-                    $bukti->keterangan = $request->input("keterangan{$i}", $defaultKet);
+                    $bukti->status      = $request->input("status{$i}", 'hold');
+                    $bukti->tanggal     = $request->input("tanggal{$i}");
+                    $bukti->keterangan  = $request->input("keterangan{$i}", $defaultKet);
+                    $bukti->uploaded_by = $request->input("uploaded_by{$i}", $bukti->uploaded_by);
                     $bukti->save();
 
                     if ($bukti->status !== $statusAwal[$i]) {
