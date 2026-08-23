@@ -19,8 +19,6 @@
     <div class="topbar-actions">
       @if($user->id !== auth()->id())
         <a class="breadcrumb" href="{{ route('customers.index') }}">&larr; Customer</a>
-      @else
-        <a class="btn-manage" href="{{ route('customers.index') }}">Kelola Customer</a>
       @endif
       <span class="chip">{{ $user->email }}</span>
       <button class="btn-theme" id="themeToggle" type="button" aria-label="Toggle theme">
@@ -165,6 +163,7 @@
 
       @if($isAdmin)
         <div class="action-bar">
+          <a href="{{ route('customers.index') }}" class="btn-ghost">Kelola Customer</a>
           <a href="{{ url('/') }}" class="btn-ghost">Kembali</a>
           <button type="submit" class="btn-primary" id="saveBtn">Simpan Semua</button>
         </div>
