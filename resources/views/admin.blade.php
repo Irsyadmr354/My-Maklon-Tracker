@@ -19,6 +19,8 @@
     <div class="topbar-actions">
       @if($user->id !== auth()->id())
         <a class="breadcrumb" href="{{ route('customers.index') }}">&larr; Customer</a>
+      @else
+        <a class="btn-manage" href="{{ route('customers.index') }}">Kelola Customer</a>
       @endif
       <span class="chip">{{ $user->email }}</span>
       <button class="btn-theme" id="themeToggle" type="button" aria-label="Toggle theme">
@@ -127,7 +129,7 @@
                   {{-- Date --}}
                   <div class="field">
                     <label>Tanggal</label>
-                    <input type="date" name="{{ $dateKey }}" value="{{ old($dateKey, $progress->{$dateKey}) }}">
+                    <input type="text" name="{{ $dateKey }}" value="{{ old($dateKey, $progress->{$dateKey}) }}" placeholder="YYYY-MM-DD" maxlength="10">
                   </div>
 
                   {{-- Step 8: keterangan --}}
