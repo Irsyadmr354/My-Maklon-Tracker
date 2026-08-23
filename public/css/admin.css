@@ -188,13 +188,10 @@ input, select, textarea { font-family: inherit; font-size: inherit; }
 /* ── Edit Panel ── */
 .edit-panel {
   max-height: 0; overflow: hidden; opacity: 0;
-  transition: max-height 0.3s ease, opacity 0.3s ease, margin 0.3s ease;
+  transition: max-height 0.3s ease, opacity 0.3s ease;
 }
-.pipeline-step.expanded .edit-panel {
-  max-height: 500px; opacity: 1; margin-top: 0.75rem;
-}
-.edit-row {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;
+.pipeline-step .edit-panel.open {
+  max-height: 600px; opacity: 1; margin-top: 0.75rem;
 }
 
 /* ── Fields ── */
@@ -307,6 +304,31 @@ details[open] .add-toggle { border-bottom: 1px solid var(--border); }
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 0.75rem;
 }
 
+/* ── Status Buttons ── */
+.field-label {
+  display: block; font-size: 0.75rem; font-weight: 600; color: var(--text-2);
+  margin-bottom: 0.4rem; text-transform: uppercase; letter-spacing: 0.06em;
+}
+.status-buttons {
+  display: flex; gap: 0.5rem; margin-bottom: 0.75rem; flex-wrap: wrap;
+}
+.status-btn {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  padding: 0.6rem 1rem; border: 1.5px solid var(--border); border-radius: var(--radius);
+  background: var(--bg-2); color: var(--text-2); font-weight: 600; font-size: 0.85rem;
+  min-height: 44px; cursor: pointer; transition: all 0.2s; flex: 1; justify-content: center;
+}
+.status-btn:hover { border-color: var(--accent); color: var(--text); }
+.status-btn-done.active {
+  background: var(--green-bg); border-color: var(--green); color: var(--green);
+}
+.status-btn-progress.active {
+  background: rgba(217,119,6,0.12); border-color: #D97706; color: #D97706;
+}
+.status-btn-hold.active {
+  background: var(--bg-3); border-color: var(--text-2); color: var(--text);
+}
+
 /* ── Mobile ── */
 @media (max-width: 520px) {
   .topbar { padding: 0.5rem 0.75rem; gap: 0.4rem; }
@@ -319,7 +341,8 @@ details[open] .add-toggle { border-bottom: 1px solid var(--border); }
   .pipeline { padding-left: 38px; }
   .pipeline::before { left: 12px; }
   .pipeline-dot { left: -38px; width: 28px; height: 28px; font-size: 0.7rem; }
-  .edit-row { grid-template-columns: 1fr; }
+  .status-buttons { flex-direction: column; }
+  .status-btn { min-height: 48px; }
   .pipeline-step { padding-left: 2rem; }
   .admin-main { padding-bottom: 6rem; }
   .action-bar { flex-wrap: wrap; justify-content: center; }

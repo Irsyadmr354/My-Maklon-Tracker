@@ -61,6 +61,7 @@
           'foto dan video' => 'gambar8.png',
           'kesimpulan'     => 'gambar2.png',
         ];
+        $firstIncomplete = null;
       @endphp
 
       <div class="pipeline pipeline-edit">
@@ -71,19 +72,10 @@
             $dateKey = "tanggal{$i}";
             $bukti = $buktiList[$i] ?? null;
             $current = old($statusKey, $progress->{$statusKey});
-            $deskripsiTahapan = [
-              1 => 'Digital Marketing',
-              2 => 'Digital Marketing',
-              3 => 'Digital Marketing',
-              4 => 'Produksi',
-              5 => 'Produksi',
-              6 => 'Produksi',
-              7 => 'Digital Marketing',
-              8 => 'Digital Marketing',
-            ];
+            if ($current !== 'done' && $firstIncomplete === null) $firstIncomplete = $i;
           @endphp
 
-          <div class="pipeline-step {{ $current === 'done' ? 'step-done' : ($current === 'on_progress' ? 'step-active' : 'step-pending') }}">
+          <div class="pipeline-step {{ $current === 'done' ? 'step-done' : ($current === 'on_progress' ? 'step-active' : 'step-pending') }}" data-step="{{ $i }}">
             <div class="pipeline-dot">
               @if($current === 'done')
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
@@ -97,7 +89,6 @@
                 <span class="badge badge-{{ $current === 'done' ? 'done' : ($current === 'on_progress' ? 'on_progress' : 'hold') }}">
                   {{ $current === 'done' ? 'Selesai' : ($current === 'on_progress' ? 'Dikerjakan' : 'Ditunda') }}
                 </span>
-                <span class="dept-label">{{ $deskripsiTahapan[$i] }}</span>
               </div>
 
               @if($bukti && $bukti->tanggal)
@@ -105,31 +96,41 @@
               @endif
 
               @if($isAdmin)
-                <button type="button" class="btn-expand" onclick="this.closest('.pipeline-step').classList.toggle('expanded')">
-                  <span class="expand-text">Edit</span>
+                <button type="button" class="btn-expand" onclick="toggleStep({{ $i }})">
+                  <span class="expand-text" id="expand-text-{{ $i }}">Edit</span>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
                 </button>
               @endif
 
               @if($isAdmin)
-                <div class="edit-panel">
-                  <div class="edit-row">
-                    <div class="field">
-                      <label>Tanggal</label>
-                      <input type="date" name="{{ $dateKey }}" value="{{ old($dateKey, $progress->{$dateKey}) }}">
+                <div class="edit-panel" id="panel-{{ $i }}">
+                  {{-- Status buttons --}}
+                  @if($i !== 8)
+                    <label class="field-label">Ubah Status</label>
+                    <div class="status-buttons">
+                      <button type="button" class="status-btn status-btn-done {{ $current === 'done' ? 'active' : '' }}" onclick="setStatus({{ $i }}, 'done', this)">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                        Selesai
+                      </button>
+                      <button type="button" class="status-btn status-btn-progress {{ $current === 'on_progress' ? 'active' : '' }}" onclick="setStatus({{ $i }}, 'on_progress', this)">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        Dikerjakan
+                      </button>
+                      <button type="button" class="status-btn status-btn-hold {{ is_null($current) || $current === 'hold' ? 'active' : '' }}" onclick="setStatus({{ $i }}, 'hold', this)">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+                        Ditunda
+                      </button>
                     </div>
-                    @if($i !== 8)
-                      <div class="field">
-                        <label>Status</label>
-                        <select name="{{ $statusKey }}" id="status-select-{{ $i }}">
-                          <option value="done" {{ $current === 'done' ? 'selected' : '' }}>Selesai</option>
-                          <option value="on_progress" {{ $current === 'on_progress' ? 'selected' : '' }}>Dikerjakan</option>
-                          <option value="hold" {{ is_null($current) || $current === 'hold' ? 'selected' : '' }}>Ditunda</option>
-                        </select>
-                      </div>
-                    @endif
+                    <input type="hidden" name="{{ $statusKey }}" id="status-input-{{ $i }}" value="{{ $current ?? 'hold' }}">
+                  @endif
+
+                  {{-- Date --}}
+                  <div class="field">
+                    <label>Tanggal</label>
+                    <input type="date" name="{{ $dateKey }}" value="{{ old($dateKey, $progress->{$dateKey}) }}">
                   </div>
 
+                  {{-- Step 8: keterangan --}}
                   @if($i === 8)
                     <div class="field">
                       <label>Keterangan Kesimpulan</label>
@@ -137,8 +138,9 @@
                     </div>
                   @endif
 
+                  {{-- Upload bukti (hanya muncul jika status = done) --}}
                   @if($i !== 7 && $i !== 8)
-                    <div class="upload-zone" data-step="{{ $i }}" style="{{ $current === 'done' ? '' : 'display:none' }}">
+                    <div class="upload-zone" id="upload-{{ $i }}" data-step="{{ $i }}" style="{{ $current === 'done' ? '' : 'display:none' }}">
                       <div class="field">
                         <label>Upload Bukti</label>
                         <input type="file" name="bukti{{ $i }}" accept=".jpg,.jpeg,.png,.pdf">
@@ -171,6 +173,7 @@
   </main>
 
   <script>
+    // Theme toggle
     (function() {
       const saved = localStorage.getItem('theme') || 'dark';
       document.documentElement.setAttribute('data-theme', saved);
@@ -182,24 +185,61 @@
       });
     })();
 
-    document.querySelectorAll("select[id^='status-select-']").forEach(select => {
-      const step = select.id.replace('status-select-', '');
-      const uploadSection = document.querySelector(`.upload-zone[data-step="${step}"]`);
-      const updateUI = () => {
-        if (select.value === 'done' && uploadSection) uploadSection.style.display = '';
-        else if (uploadSection) uploadSection.style.display = 'none';
-      };
-      updateUI();
-      select.addEventListener('change', updateUI);
+    // Status buttons → set hidden input + toggle upload zone
+    function setStatus(step, value, btn) {
+      document.getElementById('status-input-' + step).value = value;
+
+      // Update active state
+      btn.closest('.status-buttons').querySelectorAll('.status-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      // Update badge
+      const badge = btn.closest('.pipeline-content').querySelector('.badge');
+      const labels = { done: 'Selesai', on_progress: 'Dikerjakan', hold: 'Ditunda' };
+      const classes = { done: 'badge-done', on_progress: 'badge-on_progress', hold: 'badge-hold' };
+      badge.textContent = labels[value];
+      badge.className = 'badge ' + classes[value];
+
+      // Update pipeline step class
+      const stepEl = btn.closest('.pipeline-step');
+      stepEl.classList.remove('step-done', 'step-active', 'step-pending');
+      const dotClasses = { done: 'step-done', on_progress: 'step-active', hold: 'step-pending' };
+      stepEl.classList.add(dotClasses[value]);
+
+      // Update dot icon
+      const dot = stepEl.querySelector('.pipeline-dot');
+      if (value === 'done') {
+        dot.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>';
+      } else {
+        dot.innerHTML = '<span class="dot-num">' + step + '</span>';
+      }
+
+      // Toggle upload zone
+      const upload = document.getElementById('upload-' + step);
+      if (upload) upload.style.display = value === 'done' ? '' : 'none';
+
+      // Step 7 WhatsApp alert
+      if (step === 7 && value === 'done') {
+        alert('Pastikan kirim buktinya di WhatsApp!');
+      }
+    }
+
+    // Toggle expand/collapse
+    function toggleStep(step) {
+      const panel = document.getElementById('panel-' + step);
+      const text = document.getElementById('expand-text-' + step);
+      const isOpen = panel.classList.toggle('open');
+      text.textContent = isOpen ? 'Tutup' : 'Edit';
+    }
+
+    // Auto-expand first incomplete step
+    document.addEventListener('DOMContentLoaded', function() {
+      @if($firstIncomplete)
+        toggleStep({{ $firstIncomplete }});
+      @endif
     });
 
-    document.addEventListener('DOMContentLoaded', () => {
-      const step7 = document.querySelector('#status-select-7');
-      if (step7) step7.addEventListener('change', function() {
-        if (this.value === 'done') alert('Pastikan kirim buktinya di WhatsApp!');
-      });
-    });
-
+    // Double submit prevention
     document.getElementById('adminForm').addEventListener('submit', function() {
       const b = document.getElementById('saveBtn');
       if (b) { b.disabled = true; b.textContent = 'Menyimpan...'; setTimeout(() => { b.disabled = false; b.textContent = 'Simpan Semua'; }, 3000); }

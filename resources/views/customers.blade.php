@@ -47,8 +47,8 @@
     </section>
 
     <div class="customer-list">
-      <details class="add-section" @if($errors->any()) open @endif>
-        <summary class="add-toggle">+ Tambah Customer</summary>
+      <details class="add-section" open>
+        <summary class="add-toggle">Tambah Customer baru</summary>
         <form method="POST" action="{{ route('customers.store') }}" class="add-form">
           @csrf
           <div class="field">
