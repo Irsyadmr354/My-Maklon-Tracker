@@ -146,3 +146,36 @@ main { max-width: 860px; margin: 0 auto; padding: 2.2rem 1.1rem 7rem; }
   main { padding-bottom: 8rem; }
 }
 @media (prefers-reduced-motion: reduce) { .alert-success { animation-duration: .01s; } }
+
+.customer-table {
+  width: 100%; border-collapse: collapse; margin-top: 1.5rem;
+  background: #fffdf7; border: 1px solid #eee0c4;
+  border-radius: 12px; overflow: hidden;
+}
+.customer-table th, .customer-table td {
+  text-align: left; padding: .7rem .95rem;
+  border-bottom: 1px solid #f1e6cd; font-size: .88rem;
+}
+.customer-table th {
+  background: #241708; color: #ffd98a;
+  font-size: .72rem; letter-spacing: .08em; text-transform: uppercase;
+}
+.customer-table tr:last-child td { border-bottom: none; }
+.role-badge {
+  padding: .22rem .65rem; border-radius: 999px;
+  font-size: .7rem; font-weight: 700;
+  letter-spacing: .05em; text-transform: uppercase;
+}
+.role-admin { background: #fdf0d3; color: #8c5a00; }
+.role-user { background: #e9efe4; color: #44603a; }
+.btn-kelola {
+  padding: .42rem 1.1rem; border-radius: 999px;
+  background: linear-gradient(180deg, #ffb52e, #e89405);
+  color: #241708; font-weight: 700; font-size: .8rem; text-decoration: none;
+}
+.btn-kelola:hover { filter: brightness(1.06); }
+.breadcrumb {
+  display: inline-block; margin-bottom: .4rem;
+  color: #b26a00; font-weight: 600; font-size: .85rem; text-decoration: none;
+}
+.breadcrumb:hover { text-decoration: underline; }

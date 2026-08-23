@@ -29,8 +29,13 @@ panel admin untuk update status dan upload bukti.
 
 ## Cara Pakai
 
-Login cukup memasukkan email dan nomor HP yang terdaftar sebagai admin.
-Setelah masuk, update status tiap tahap produksi dan unggah bukti dari panel admin.
+Login sebagai admin cukup memasukkan email dan nomor HP yang terdaftar pada `ADMIN_PHONE`.
+Setelah masuk, kelola customer dengan cara berikut:
+
+- **Kelola customer:** buka `/admin/customers`, pilih customer, ubah status tahap +
+  unggah bukti, lalu klik **Simpan Semua**.
+- **Cabut akses admin:** kosongkan/ganti `ADMIN_PHONE` di `.env` lalu simpan; pada
+  login berikutnya role akun lama otomatis turun menjadi user.
 
 ### Disclaimer Keamanan
 

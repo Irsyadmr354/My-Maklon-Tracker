@@ -13,6 +13,10 @@ Route::post('/login', [UserController::class, 'logika_masuk'])
 Route::middleware(['auth', 'IsAdmin'])->group(function () {
     Route::get('/admin', [UserController::class, 'admin'])
          ->name('admin.index');
+    Route::get('/admin/customers', [UserController::class, 'customers'])
+         ->name('customers.index');
+    Route::get('/admin/customers/{target}', [UserController::class, 'customerShow'])
+         ->name('customers.show');
     Route::post('/progress/update', [UserController::class, 'updateProgress'])
          ->name('progress.update');
 });

@@ -18,7 +18,7 @@
         <span class="brand-sub">Panel Admin</span>
       </div>
     </div>
-    <span class="admin-chip">{{ $user->email }}</span>
+    <span class="admin-chip">@if($user->id !== auth()->id())Customer: @endif{{ $user->email }}</span>
   </header>
 
   @if(session('success'))
@@ -45,6 +45,10 @@
   @endphp
 
   <main>
+    @if($user->id !== auth()->id())
+      <a class="breadcrumb" href="{{ route('customers.index') }}">&larr; Daftar Customer</a>
+    @endif
+
     <section class="hero">
       <h1>Kelola progres pesanan</h1>
       <p>Perbarui status tiap tahap, unggah bukti, lalu simpan.</p>
@@ -58,6 +62,7 @@
 
       <form action="{{ route('progress.update') }}" method="POST" enctype="multipart/form-data" id="adminForm">
         @csrf
+        <input type="hidden" name="user_id" value="{{ $user->id }}">
 
         <ul class="stages">
           @foreach($stages as $stepName => $gambar)

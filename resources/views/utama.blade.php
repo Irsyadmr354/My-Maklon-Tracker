@@ -36,6 +36,13 @@
         <p class="drip-label">{{ $doneCount }} dari 8 tahap selesai</p>
       </section>
 
+      @if($buktiList->isEmpty())
+        <div class="empty-state">
+          <h2>Pesanan kamu belum dimulai</h2>
+          <p>Tim Madu Wild Bee akan mengisi progres di halaman ini setiap tahap berjalan. Ada pertanyaan soal pesanan? Hubungi CS kami.</p>
+        </div>
+      @endif
+
       <ol class="timeline">
         @foreach($stages as $stepName => $gambar)
           @php

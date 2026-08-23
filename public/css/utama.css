@@ -159,3 +159,11 @@ main { max-width: 780px; margin: 0 auto; padding: 2.2rem 1.1rem 3rem; }
   .drip-fill { transition: none; }
   .alert-success { animation-duration: .01s; }
 }
+
+.empty-state {
+  background: #fffdf7; border: 1px dashed #e4b45e;
+  border-radius: 16px; padding: 1.6rem;
+  text-align: center; margin-bottom: 2rem;
+}
+.empty-state h2 { font-family: 'Fraunces', Georgia, serif; font-size: 1.15rem; margin-bottom: .35rem; }
+.empty-state p { color: #5b4630; font-size: .9rem; }

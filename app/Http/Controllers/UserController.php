@@ -16,7 +16,7 @@ class UserController extends Controller
     public function __construct()
     {
         $this->middleware('auth')->only([
-            'index', 'admin', 'updateProgress'
+            'index', 'admin', 'updateProgress', 'customers', 'customerShow'
         ]);
     }
 
@@ -42,10 +42,13 @@ class UserController extends Controller
 
         $user->no_hp = $request->no_hp;
 
+        // Role SELALU ditentukan nomor yang dipakai login (sumber kebenaran tunggal:
+        // env ADMIN_PHONE). Ganti/ kosongkan ADMIN_PHONE = admin lama otomatis
+        // turun menjadi user pada login berikutnya (role mudah dicabut).
         $adminPhone = config('maklon.admin_phone');
-        if ($adminPhone !== null && hash_equals($adminPhone, $request->no_hp)) {
-            $user->role = 'admin';
-        }
+        $user->role = ($adminPhone !== null && hash_equals($adminPhone, $request->no_hp))
+            ? 'admin'
+            : 'user';
 
         $user->save();
 
@@ -61,13 +64,42 @@ class UserController extends Controller
 
     public function admin()
     {
-        if (Auth::user()->role !== 'admin') {
-            abort(403, 'Unauthorized access');
-        }
+        return $this->renderTracker(Auth::user());
+    }
 
-        $data = $this->loadTrackerData((int) Auth::id());
+    public function customers()
+    {
+        $customers = User::orderByDesc('created_at')->get();
 
-        return view('admin', $data);
+        // View membaca $c->progress, sedangkan relasi di model bernama
+        // progresses(). Suntikkan hasil prefetch sebagai relasi ter-load
+        // agar tanpa N+1 dan tanpa mengubah model/view.
+        $progresses = Progress::whereIn('user_id', $customers->modelKeys())
+            ->get()
+            ->keyBy('user_id');
+
+        $customers->each(function (User $customer) use ($progresses) {
+            $customer->setRelation('progress', $progresses->get($customer->id));
+        });
+
+        return view('customers', compact('customers'));
+    }
+
+    public function customerShow(User $target)
+    {
+        return $this->renderTracker($target);
+    }
+
+    private function renderTracker(User $target)
+    {
+        $progress  = Progress::firstOrCreate(['user_id' => $target->id]);
+        $buktiList = Bukti::where('user_id', $target->id)->get()->keyBy('step');
+
+        return view('admin', [
+            'user'      => $target,
+            'progress'  => $progress,
+            'buktiList' => $buktiList,
+        ]);
     }
 
     public function index()
@@ -103,8 +135,7 @@ class UserController extends Controller
 
     public function updateProgress(Request $request)
     {
-        $user     = Auth::user();
-        $progress = Progress::firstOrCreate(['user_id' => $user->id]);
+        $user = Auth::user();
 
         $tahapan = [
             1 => 'konsultasi',    2 => 'pembayaran',
@@ -120,14 +151,19 @@ class UserController extends Controller
             $rules["keterangan{$i}"] = 'nullable|string|max:255';
             $rules["bukti{$i}"]      = 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048';
         }
+        $rules['user_id'] = 'nullable|integer|exists:users,id';
         $request->validate($rules);
 
-        $buktiPerStep = Bukti::where('user_id', $user->id)->get()->keyBy('step');
+        $targetId = $request->input('user_id') ?? $user->id;
 
-        DB::transaction(function () use ($request, $user, $progress, $tahapan, $buktiPerStep) {
+        $progress = Progress::firstOrCreate(['user_id' => $targetId]);
+
+        $buktiPerStep = Bukti::where('user_id', $targetId)->get()->keyBy('step');
+
+        DB::transaction(function () use ($request, $progress, $tahapan, $buktiPerStep, $targetId) {
             foreach ($tahapan as $i => $defaultKet) {
                 $existing = $buktiPerStep->get($i);
-                $bukti    = $existing ?? new Bukti(['user_id' => $user->id, 'step' => $i]);
+                $bukti    = $existing ?? new Bukti(['user_id' => $targetId, 'step' => $i]);
 
                 if ($request->hasFile("bukti{$i}")) {
                     $oldPath = $existing->path ?? null;

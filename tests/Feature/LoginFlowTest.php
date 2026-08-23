@@ -42,6 +42,23 @@ class LoginFlowTest extends TestCase
         ]);
     }
 
+    public function test_role_admin_dicabut_jika_login_nomor_biasa(): void
+    {
+        config(['maklon.admin_phone' => null]);
+
+        $user = User::factory()->admin()->create();
+
+        $this->post('/login', [
+            'email' => $user->email,
+            'no_hp' => '081234567890',
+        ]);
+
+        $this->assertDatabaseHas('users', [
+            'id' => $user->id,
+            'role' => 'user',
+        ]);
+    }
+
     public function test_user_biasa_get_admin_ditolak_403(): void
     {
         $user = User::factory()->create();
