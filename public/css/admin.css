@@ -179,3 +179,77 @@ main { max-width: 860px; margin: 0 auto; padding: 2.2rem 1.1rem 7rem; }
   color: #b26a00; font-weight: 600; font-size: .85rem; text-decoration: none;
 }
 .breadcrumb:hover { text-decoration: underline; }
+
+/* Tombol keluar (topbar) */
+.btn-logout {
+  padding: .42rem 1.15rem;
+  border: 1.5px solid rgba(255, 217, 138, .5);
+  border-radius: 999px;
+  background: transparent;
+  color: #ffd98a;
+  font-family: inherit;
+  font-size: .78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color .15s ease;
+}
+.btn-logout:hover { background: rgba(242, 162, 12, .14); }
+.btn-logout:focus-visible { outline: 3px solid #f2a20c; outline-offset: 2px; }
+
+/* Panel tambah customer */
+.details-add {
+  margin-top: 1.5rem;
+  background: #fffdf7;
+  border: 1px solid #eee0c4;
+  border-radius: 12px;
+  overflow: hidden;
+}
+.details-add summary {
+  cursor: pointer;
+  padding: .85rem 1.1rem;
+  font-family: 'Fraunces', Georgia, serif;
+  font-weight: 600;
+  color: #b26a00;
+}
+.details-add[open] summary { border-bottom: 1px solid #f1e6cd; }
+.add-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: .8rem;
+  align-items: end;
+  padding: 1rem 1.1rem 1.2rem;
+}
+.add-field label {
+  display: block;
+  margin-bottom: .3rem;
+  font-size: .74rem;
+  font-weight: 600;
+  color: #5b4630;
+}
+.add-field input {
+  width: 100%;
+  padding: .55rem .7rem;
+  border: 1.5px solid #e4d5b8;
+  border-radius: 9px;
+  background: #fffdf7;
+  color: #241708;
+  font-size: .88rem;
+}
+.add-field input:focus {
+  outline: none;
+  border-color: #f2a20c;
+  box-shadow: 0 0 0 3px rgba(242, 162, 12, .22);
+}
+.btn-add {
+  padding: .55rem 1.4rem;
+  border: none;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #ffb52e, #e89405);
+  color: #241708;
+  font-weight: 700;
+  font-size: .84rem;
+  cursor: pointer;
+}
+.btn-add:hover { filter: brightness(1.06); }
+.btn-add:focus-visible { outline: 3px solid #f2a20c; outline-offset: 2px; }
+.no-access ul { margin: .4rem 0 0 1.1rem; text-align: left; }

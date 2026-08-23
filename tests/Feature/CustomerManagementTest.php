@@ -4,11 +4,20 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Routing\Middleware\ThrottleRequests;
+use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
 class CustomerManagementTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->withoutMiddleware(ThrottleRequests::class);
+    }
 
     public function test_admin_melihat_daftar_customer(): void
     {
@@ -58,5 +67,46 @@ class CustomerManagementTest extends TestCase
         ]);
 
         $response->assertRedirect(route('login'));
+    }
+
+    public function test_admin_menambah_customer(): void
+    {
+        $admin = User::factory()->admin()->create();
+
+        $response = $this->actingAs($admin)->post('/admin/customers', [
+            'email' => 'customer-baru@example.com',
+            'no_hp' => '081234567891',
+            'password' => 'rahasia123',
+        ]);
+
+        $response->assertRedirect();
+        $response->assertSessionHas('success', 'Customer ditambahkan.');
+
+        $baru = User::where('email', 'customer-baru@example.com')->firstOrFail();
+        $this->assertTrue(Hash::check('rahasia123', $baru->password));
+        $this->assertSame('user', $baru->role);
+    }
+
+    public function test_customer_baru_bisa_login_password(): void
+    {
+        $admin = User::factory()->admin()->create();
+
+        $this->actingAs($admin)->post('/admin/customers', [
+            'email' => 'customer-baru@example.com',
+            'no_hp' => '081234567891',
+            'password' => 'rahasia123',
+        ]);
+
+        $this->post('/logout');
+
+        $response = $this->post('/login', [
+            'email' => 'customer-baru@example.com',
+            'password' => 'rahasia123',
+        ]);
+
+        $response->assertRedirect(route('tracker.index'));
+
+        $baru = User::where('email', 'customer-baru@example.com')->firstOrFail();
+        $this->assertAuthenticatedAs($baru);
     }
 }

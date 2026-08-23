@@ -17,6 +17,8 @@ Route::middleware(['auth', 'IsAdmin'])->group(function () {
          ->name('customers.index');
     Route::get('/admin/customers/{target}', [UserController::class, 'customerShow'])
          ->name('customers.show');
+    Route::post('/admin/customers', [UserController::class, 'tambahCustomer'])
+         ->name('customers.store');
     Route::post('/progress/update', [UserController::class, 'updateProgress'])
          ->name('progress.update');
 });
@@ -24,6 +26,8 @@ Route::middleware(['auth', 'IsAdmin'])->group(function () {
 Route::middleware(['auth'])->group(function () {
     Route::get('/order-tracker', [UserController::class, 'index'])
          ->name('tracker.index');
+    Route::get('/bukti/{bukti}', [UserController::class, 'lihatBukti'])
+         ->name('bukti.show');
     Route::post('/logout', [UserController::class, 'logout'])
          ->name('logout');
 });

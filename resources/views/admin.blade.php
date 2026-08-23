@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
@@ -6,8 +6,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <title>Panel Admin — Madu Wild Bee</title>
-  <link rel="stylesheet" href="{{ asset('/public/css/admin.css') }}">
+  <title>Panel Admin â€” Madu Wild Bee</title>
+  <link rel="stylesheet" href="{{ asset('public/css/admin.css') }}">
   <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
 <body>
@@ -19,6 +19,10 @@
       </div>
     </div>
     <span class="admin-chip">@if($user->id !== auth()->id())Customer: @endif{{ $user->email }}</span>
+    <form method="POST" action="{{ route('logout') }}">
+      @csrf
+      <button type="submit" class="btn-logout">Keluar</button>
+    </form>
   </header>
 
   @if(session('success'))
@@ -87,7 +91,7 @@
 
             <li class="card">
               <div class="card-img">
-                <img src="{{ asset('/public/gambar/' . $gambar) }}" alt="{{ $stepName }}">
+                <img src="{{ asset('public/gambar/' . $gambar) }}" alt="{{ $stepName }}">
               </div>
 
               <div class="card-main">
@@ -134,7 +138,7 @@
 
                     @if($bukti)
                       <p>File sebelumnya:
-                        <a href="{{ asset('public/storage/' . $bukti->path) }}" target="_blank">Lihat</a>
+                        <a href="{{ route('bukti.show', $bukti->id) }}" target="_blank" rel="noopener">Lihat</a>
                       </p>
                     @endif
                   </div>

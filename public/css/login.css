@@ -97,6 +97,16 @@ body {
 
 .form-group input::placeholder { color: #b9a685; }
 
+/* Kata sandi + aktivasi pertama */
+.form-hint { margin-top: .35rem; font-size: .72rem; color: #8a745a; }
+.form-group--optional { margin-top: -.2rem; }
+.form-group--optional label {
+  font-size: .74rem;
+  font-weight: 500;
+  color: #8a745a;
+}
+.form-group--optional input { padding: .6rem .85rem; font-size: .85rem; }
+
 .button-wrapper { margin-top: 1.75rem; }
 
 .btn-login {

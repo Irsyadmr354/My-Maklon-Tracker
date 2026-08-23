@@ -14,9 +14,15 @@ class IsAdmin
             return redirect()->route('login.form');
         }
 
-        if (Auth::user()->role !== 'admin') {
-            abort(403, 'Unauthorized access');
-        }
+        // Sumber kebenaran LIVE: no_hp user harus cocok dengan ADMIN_PHONE
+        // yang sedang aktif. Mengubah/mengosongkan ADMIN_PHONE di .env
+        // mencabut akses admin pada request berikutnya tanpa login ulang.
+        $adminPhone = config('maklon.admin_phone');
+
+        $cocok = ($adminPhone !== null && $adminPhone !== '')
+            && hash_equals((string) $adminPhone, (string) Auth::user()->no_hp);
+
+        abort_unless($cocok, 403, 'Unauthorized access');
 
         return $next($request);
     }

@@ -5,18 +5,23 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 use App\Models\User;
 use App\Models\Progress;
 use App\Models\Bukti;
+use App\Models\ProgressHistory;
+use Throwable;
 
 class UserController extends Controller
 {
     public function __construct()
     {
         $this->middleware('auth')->only([
-            'index', 'admin', 'updateProgress', 'customers', 'customerShow'
+            'index', 'admin', 'updateProgress', 'customers', 'customerShow',
+            'tambahCustomer', 'lihatBukti',
         ]);
     }
 
@@ -28,29 +33,47 @@ class UserController extends Controller
     public function logika_masuk(Request $request)
     {
         $request->validate([
-            'email' => 'required|email|max:255',
-            'no_hp' => 'required|string|regex:/^[0-9]{10,15}$/',
+            'email'    => 'required|email|max:255',
+            'password' => 'required|string|min:8',
+            'no_hp'    => 'nullable|string|max:20',
         ]);
-        
-        $user = User::firstOrCreate(
-            ['email' => $request->email],
-            [
-                'no_hp' => $request->no_hp,
-                'role'  => 'user',
-            ]
-        );
 
-        $user->no_hp = $request->no_hp;
+        $pesanLoginGagal = fn () => ValidationException::withMessages([
+            'login' => 'Email atau kata sandi salah.',
+        ]);
 
-        // Role SELALU ditentukan nomor yang dipakai login (sumber kebenaran tunggal:
-        // env ADMIN_PHONE). Ganti/ kosongkan ADMIN_PHONE = admin lama otomatis
-        // turun menjadi user pada login berikutnya (role mudah dicabut).
+        $user = User::where('email', $request->input('email'))->first();
+
+        if (! $user) {
+            throw $pesanLoginGagal();
+        }
+
         $adminPhone = config('maklon.admin_phone');
-        $user->role = ($adminPhone !== null && hash_equals($adminPhone, $request->no_hp))
-            ? 'admin'
-            : 'user';
+        $cocokAdmin = false;
 
-        $user->save();
+        if ($adminPhone === null || $adminPhone === '') {
+            Log::warning('ADMIN_PHONE kosong/tidak diatur: tidak ada admin yang diakui pada percobaan login ini.');
+        } elseif ($request->filled('no_hp')) {
+            $cocokAdmin = hash_equals((string) $adminPhone, (string) $request->input('no_hp'));
+        }
+
+        if ($user->password === null) {
+            if (! $request->filled('no_hp')
+                || ! hash_equals((string) $user->no_hp, (string) $request->input('no_hp'))) {
+                throw $pesanLoginGagal();
+            }
+
+            $user->password = Hash::make($request->input('password'));
+            $user->role     = $cocokAdmin ? 'admin' : 'user';
+        } elseif (! Hash::check($request->input('password'), $user->password)) {
+            throw $pesanLoginGagal();
+        } elseif ($cocokAdmin && $user->role !== 'admin') {
+            $user->role = 'admin';
+        }
+
+        if ($user->isDirty()) {
+            $user->save();
+        }
 
         Auth::login($user);
         $request->session()->regenerate();
@@ -60,6 +83,43 @@ class UserController extends Controller
         }
 
         return redirect()->route('tracker.index');
+    }
+
+    public function tambahCustomer(Request $request)
+    {
+        $data = $request->validate([
+            'email'    => 'required|email|unique:users,email',
+            'no_hp'    => 'required|string|max:20',
+            'password' => 'required|string|min:8',
+        ]);
+
+        User::create([
+            'email'    => $data['email'],
+            'no_hp'    => $data['no_hp'],
+            'role'     => 'user',
+            'password' => Hash::make($data['password']),
+        ]);
+
+        return back()->with('success', 'Customer ditambahkan.');
+    }
+
+    public function lihatBukti(Bukti $bukti)
+    {
+        abort_unless($bukti->path, 404);
+
+        $userId = Auth::id();
+
+        abort_unless(
+            ($userId !== null && (int) $userId === (int) $bukti->user_id)
+            || $this->adminAktif(),
+            403
+        );
+
+        $relatif = str_starts_with($bukti->path, 'bukti/')
+            ? substr($bukti->path, strlen('bukti/'))
+            : $bukti->path;
+
+        return Storage::disk('bukti')->response($relatif);
     }
 
     public function admin()
@@ -104,7 +164,7 @@ class UserController extends Controller
 
     public function index()
     {
-        if (Auth::user()->role === 'admin') {
+        if ($this->adminAktif()) {
             abort(403, 'Admin tidak boleh akses order-tracker.');
         }
 
@@ -160,42 +220,90 @@ class UserController extends Controller
 
         $buktiPerStep = Bukti::where('user_id', $targetId)->get()->keyBy('step');
 
-        DB::transaction(function () use ($request, $progress, $tahapan, $buktiPerStep, $targetId) {
-            foreach ($tahapan as $i => $defaultKet) {
-                $existing = $buktiPerStep->get($i);
-                $bukti    = $existing ?? new Bukti(['user_id' => $targetId, 'step' => $i]);
+        $statusAwal = [];
+        foreach ($tahapan as $i => $defaultKet) {
+            $statusAwal[$i] = $buktiPerStep->get($i)->status ?? null;
+        }
 
-                if ($request->hasFile("bukti{$i}")) {
-                    $oldPath = $existing->path ?? null;
-                    $path    = $request->file("bukti{$i}")->store('bukti', 'public');
+        $fileBaru = [];
+        $fileLama = [];
 
-                    if ($path === false) {
-                        throw ValidationException::withMessages([
-                            "bukti{$i}" => "Gagal mengunggah bukti untuk tahap {$i}.",
+        try {
+            DB::transaction(function () use ($request, $progress, $tahapan, $buktiPerStep, $targetId, $statusAwal, &$fileBaru, &$fileLama) {
+                foreach ($tahapan as $i => $defaultKet) {
+                    $existing = $buktiPerStep->get($i);
+                    $bukti    = $existing ?? new Bukti(['user_id' => $targetId, 'step' => $i]);
+
+                    if ($request->hasFile("bukti{$i}")) {
+                        $tersimpan = $request->file("bukti{$i}")->store('', 'bukti');
+
+                        if ($tersimpan === false) {
+                            throw ValidationException::withMessages([
+                                "bukti{$i}" => "Gagal mengunggah bukti untuk tahap {$i}.",
+                            ]);
+                        }
+
+                        $fileBaru[] = $tersimpan;
+
+                        if ($existing && $existing->path) {
+                            $fileLama[] = $existing->path;
+                        }
+
+                        $bukti->path = 'bukti/' . $tersimpan;
+                    }
+
+                    $bukti->status     = $request->input("status{$i}", 'hold');
+                    $bukti->tanggal    = $request->input("tanggal{$i}");
+                    $bukti->keterangan = $request->input("keterangan{$i}", $defaultKet);
+                    $bukti->save();
+
+                    if ($bukti->status !== $statusAwal[$i]) {
+                        ProgressHistory::create([
+                            'user_id'     => $targetId,
+                            'step'        => $i,
+                            'status_lama' => $statusAwal[$i],
+                            'status_baru' => $bukti->status,
+                            'changed_by'  => Auth::id(),
                         ]);
                     }
 
-                    if ($oldPath) {
-                        Storage::disk('public')->delete($oldPath);
-                    }
-
-                    $bukti->path = $path;
+                    $progress->{"status{$i}"}  = $bukti->status;
+                    $progress->{"tanggal{$i}"} = $bukti->tanggal;
                 }
 
-                $bukti->status     = $request->input("status{$i}", 'hold');
-                $bukti->tanggal    = $request->input("tanggal{$i}");
-                $bukti->keterangan = $request->input("keterangan{$i}", $defaultKet);
-                $bukti->save();
-
-                $progress->{"status{$i}"}  = $bukti->status;
-                $progress->{"tanggal{$i}"} = $bukti->tanggal;
+                $progress->save();
+            });
+        } catch (Throwable $e) {
+            foreach ($fileBaru as $relatif) {
+                Storage::disk('bukti')->delete($relatif);
             }
 
-            $progress->save();
-        });
+            throw $e;
+        }
+
+        foreach ($fileLama as $lama) {
+            $this->hapusBerkasBukti($lama);
+        }
 
         return back()->with('success',
             'Progress & Bukti berhasil diperbarui.');
+    }
+
+    private function hapusBerkasBukti(?string $path): void
+    {
+        if (! $path) {
+            return;
+        }
+
+        $diDiskPrivat = str_starts_with($path, 'bukti/')
+            ? substr($path, strlen('bukti/'))
+            : $path;
+
+        Storage::disk('bukti')->delete($diDiskPrivat);
+
+        if ($path !== $diDiskPrivat) {
+            Storage::disk('public')->delete($path);
+        }
     }
 
     public function logout(Request $request)
@@ -203,8 +311,16 @@ class UserController extends Controller
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-        
+
         return redirect()->route('login.form')
             ->with('success', 'Berhasil logout');
+    }
+
+    private function adminAktif(): bool
+    {
+        $adminPhone = config('maklon.admin_phone');
+
+        return ($adminPhone !== null && $adminPhone !== '')
+            && hash_equals((string) $adminPhone, (string) Auth::user()->no_hp);
     }
 }

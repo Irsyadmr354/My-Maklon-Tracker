@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="id">
   <head>
     <meta charset="UTF-8" />
@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('public/css/utama.css') }}" />
-    <title>Tracker Pesanan — Madu Wild Bee</title>
+    <title>Tracker Pesanan â€” Madu Wild Bee</title>
   </head>
   <body>
     @php
@@ -22,6 +22,10 @@
           <span class="brand-sub">Maklon Tracker</span>
         </div>
       </div>
+      <form method="POST" action="{{ route('logout') }}">
+        @csrf
+        <button type="submit" class="btn-logout extra-btn" style="margin-top: 0;">Keluar</button>
+      </form>
     </header>
 
     @if(session('success'))
@@ -74,7 +78,7 @@
               </div>
 
               <div class="step-grid">
-                <img class="step-img" src="{{ asset('/public/gambar/' . $gambar) }}" alt="{{ $stepName }}" />
+                <img class="step-img" src="{{ asset('public/gambar/' . $gambar) }}" alt="{{ $stepName }}" />
 
                 <div class="controls">
                   <input type="date" disabled value="{{ optional($bukti)->tanggal }}" />
@@ -88,13 +92,17 @@
                 </div>
               </div>
 
-              {{-- Tombol Lihat Bukti khusus tahap 1–6 --}}
+              {{-- Tombol Lihat Bukti khusus tahap 1â€“6 --}}
               @if($step >= 1 && $step <= 6 && $bukti && $bukti->path)
-                <button type="button" class="extra-btn js-show-popup"
-                  data-popup-src="{{ asset('/public/storage/'.$bukti->path) }}"
-                  data-popup-desc="{{ $bukti->keterangan }}">
-                  Lihat Bukti
-                </button>
+                @if(str_ends_with(strtolower($bukti->path), '.pdf'))
+                  <a class="extra-btn" href="{{ route('bukti.show', $bukti->id) }}" target="_blank" rel="noopener">Lihat Bukti</a>
+                @else
+                  <button type="button" class="extra-btn js-show-popup"
+                    data-popup-src="{{ route('bukti.show', $bukti->id) }}"
+                    data-popup-desc="{{ $bukti->keterangan }}">
+                    Lihat Bukti
+                  </button>
+                @endif
               @endif
 
               {{-- Tombol WhatsApp khusus tahap 7 --}}

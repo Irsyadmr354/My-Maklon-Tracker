@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
@@ -6,8 +6,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="{{ asset('/public/css/login.css') }}">
-  <title>Masuk — Madu Wild Bee Maklon Tracker</title>
+  <link rel="stylesheet" href="{{ asset('public/css/login.css') }}">
+  <title>Masuk â€” Madu Wild Bee Maklon Tracker</title>
   <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
 <body>
@@ -48,16 +48,22 @@
                value="{{ old('email') }}" required autocomplete="email" />
       </div>
       <div class="form-group">
-        <label for="no_hp">Nomor HP</label>
+        <label for="password">Kata Sandi</label>
+        <input type="password" id="password" name="password" placeholder="Minimal 8 karakter"
+               required minlength="8" autocomplete="current-password" />
+        <p class="form-hint">Kata sandi minimal 8 karakter.</p>
+      </div>
+      <div class="form-group form-group--optional">
+        <label for="no_hp">No HP â€” isi hanya saat aktivasi pertama</label>
         <input type="text" id="no_hp" name="no_hp" placeholder="081234567890"
-               value="{{ old('no_hp') }}" required inputmode="numeric" />
+               value="{{ old('no_hp') }}" inputmode="numeric" maxlength="20" autocomplete="tel" />
       </div>
       <div class="form-group button-wrapper">
         <button type="submit" class="btn-login" id="submitBtn">Masuk</button>
       </div>
     </form>
 
-    <p class="login-footer">Masuk dengan email dan nomor HP yang terdaftar.</p>
+    <p class="login-footer">Masuk dengan email dan kata sandi. No HP hanya diisi saat aktivasi pertama.</p>
   </div>
 
   <script>

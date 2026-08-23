@@ -9,10 +9,21 @@
 //   php -S 127.0.0.1:8000 server-local.php
 
 $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-$file = __DIR__.str_replace('/', DIRECTORY_SEPARATOR, $path);
 
-if ($path !== '/' && is_file($file)) {
-    return false;
+// Aset dilayani dari folder public/ (konvensi URL: /public/css/... sama
+// seperti di shared hosting). Cek root dulu, lalu fallback ke public/.
+$relatif = str_replace('/', DIRECTORY_SEPARATOR, $path);
+$kandidat = [
+    __DIR__.$relatif,
+    __DIR__.DIRECTORY_SEPARATOR.'public'.$relatif,
+];
+
+if ($path !== '/') {
+    foreach ($kandidat as $file) {
+        if (is_file($file)) {
+            return false;
+        }
+    }
 }
 
 require __DIR__.'/index.php';

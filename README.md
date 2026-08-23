@@ -8,9 +8,10 @@ panel admin untuk update status dan upload bukti.
 
 - Tracking progres produksi 8 tahap secara real-time
 - Panel admin untuk update status tiap tahap
-- Upload bukti berupa foto & video per tahap
+- Upload bukti berupa foto & video per tahap (disimpan di disk privat)
 - Halaman order tracker untuk cek status pesanan
-- Login admin sederhana dengan email + nomor HP
+- Login dengan email + password (aktivasi pertama memakai nomor HP)
+- Admin dapat menambah customer langsung dari panel
 
 ## Persyaratan
 
@@ -29,22 +30,48 @@ panel admin untuk update status dan upload bukti.
 
 ## Cara Pakai
 
-Login sebagai admin cukup memasukkan email dan nomor HP yang terdaftar pada `ADMIN_PHONE`.
-Setelah masuk, kelola customer dengan cara berikut:
+### Login
 
-- **Kelola customer:** buka `/admin/customers`, pilih customer, ubah status tahap +
-  unggah bukti, lalu klik **Simpan Semua**.
+Login memakai **email + password** (min. 8 karakter). Pesan kesalahan selalu generik
+("Email atau kata sandi salah.") baik email tak terdaftar maupun password salah.
+
+### Aktivasi pertama (user lama pra-migrasi)
+
+User lama yang belum punya password login dengan cara berikut:
+
+1. Isi email + password baru (min. 8 karakter).
+2. Isi kolom opsional **No HP** — harus sama persis dengan nomor HP terdaftar.
+3. Berhasil → password tersimpan (ter-hash) dan langsung masuk. Registrasi akun
+   baru lewat halaman login sudah ditutup; customer baru dibuat admin via panel.
+
+### Tambah customer (admin)
+
+Buka `/admin/customers`, buka blok **Tambah Customer**, isi email, no HP, dan
+password (min. 8 karakter), lalu simpan. Customer baru otomatis role `user`.
+
+### Reset password (sementara, via tinker)
+
+```bash
+php artisan tinker
+```
+
+```php
+$u = App\Models\User::where('email', 'customer@example.com')->first();
+$u->update(['password' => Illuminate\Support\Facades\Hash::make('password-baru')]);
+```
+
+### Lain-lain
+
 - **Cabut akses admin:** kosongkan/ganti `ADMIN_PHONE` di `.env` lalu simpan; pada
   login berikutnya role akun lama otomatis turun menjadi user.
-
-### Disclaimer Keamanan
-
-**PENTING:** model autentikasi tanpa password ini lemah — siapa pun yang tahu
-kombinasi email + nomor HP bisa masuk. Ganti ke metode password atau OTP
-sebelum aplikasi dipakai publik.
+- Setiap perubahan status tahap tercatat di tabel `progress_histories`
+  (status lama, status baru, siapa yang mengubah).
 
 ## Catatan Deployment
 
+- Jalankan **sekali** setelah migrate: `php artisan maklon:pindah-bukti` —
+  memindahkan file bukti lama dari `storage/app/public/bukti` ke
+  `storage/app/bukti` (disk privat, tak bisa diakses publik). Idempotent.
 - Deploy flat shared hosting: salin `index.php` & `.htaccess` ke root dokumen.
 - Pastikan `.htaccess` aktif karena memblokir akses langsung ke `/.env`,
   `/storage`, folder internal, dan file tooling lainnya.
