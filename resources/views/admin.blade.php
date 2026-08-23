@@ -163,8 +163,8 @@
 
       @if($isAdmin)
         <div class="action-bar">
-          <a href="{{ route('customers.index') }}" class="btn-ghost">Kelola Customer</a>
           <a href="{{ url('/') }}" class="btn-ghost">Kembali</a>
+          <a href="{{ route('customers.index') }}" class="btn-ghost">Kelola Customer</a>
           <button type="submit" class="btn-primary" id="saveBtn">Simpan Semua</button>
         </div>
       @else
