@@ -5,32 +5,35 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <title>Panel Admin â€” Madu Wild Bee</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <title>Panel Admin — Madu Wild Bee</title>
   <link rel="stylesheet" href="{{ asset('public/css/admin.css') }}">
   <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
-<body>
+<body class="admin-page">
   <header class="topbar">
     <div class="brand">
-      <span class="hex-mark"></span>
       <div class="brand-name">Madu Wild Bee
         <span class="brand-sub">Panel Admin</span>
       </div>
     </div>
-    <span class="admin-chip">@if($user->id !== auth()->id())Customer: @endif{{ $user->email }}</span>
-    <form method="POST" action="{{ route('logout') }}">
-      @csrf
-      <button type="submit" class="btn-logout">Keluar</button>
-    </form>
+    <div class="topbar-right">
+      @if($user->id !== auth()->id())
+        <a class="breadcrumb" href="{{ route('customers.index') }}">&larr; Customer</a>
+      @endif
+      <span class="admin-chip">{{ $user->email }}</span>
+      <form method="POST" action="{{ route('logout') }}">
+        @csrf
+        <button type="submit" class="btn-logout">Keluar</button>
+      </form>
+    </div>
   </header>
 
   @if(session('success'))
-    <div class="alert-success">{{ session('success') }}</div>
+    <div class="toast">{{ session('success') }}</div>
   @endif
-
   @if(session('error'))
-    <div class="no-access">{{ session('error') }}</div>
+    <div class="toast toast--error">{{ session('error') }}</div>
   @endif
 
   @php
@@ -49,129 +52,109 @@
   @endphp
 
   <main>
-    @if($user->id !== auth()->id())
-      <a class="breadcrumb" href="{{ route('customers.index') }}">&larr; Daftar Customer</a>
-    @endif
-
-    <section class="hero">
+    <section class="page-header">
       <h1>Kelola progres pesanan</h1>
-      <p>Perbarui status tiap tahap, unggah bukti, lalu simpan.</p>
+      <p>{{ $user->email }} — perbarui status, unggah bukti, lalu simpan.</p>
     </section>
 
-    <div class="container">
-      <div class="email-row">
-        <label for="admin-email">Akun</label>
-        <input class="form-group" id="admin-email" type="email" value="{{ $user->email }}" readonly />
-      </div>
+    <form action="{{ route('progress.update') }}" method="POST" enctype="multipart/form-data" id="adminForm">
+      @csrf
+      <input type="hidden" name="user_id" value="{{ $user->id }}">
 
-      <form action="{{ route('progress.update') }}" method="POST" enctype="multipart/form-data" id="adminForm">
-        @csrf
-        <input type="hidden" name="user_id" value="{{ $user->id }}">
+      <div class="stages-grid">
+        @foreach($stages as $stepName => $gambar)
+          @php
+            $i          = $loop->iteration;
+            $statusKey  = "status{$i}";
+            $dateKey    = "tanggal{$i}";
+            $bukti      = $buktiList[$i] ?? null;
+            $current    = old($statusKey, $progress->{$statusKey});
 
-        <ul class="stages">
-          @foreach($stages as $stepName => $gambar)
-            @php
-              $i          = $loop->iteration;
-              $statusKey  = "status{$i}";
-              $dateKey    = "tanggal{$i}";
-              $bukti      = $buktiList[$i] ?? null;
-              $current    = old($statusKey, $progress->{$statusKey});
+            $deskripsiTahapan = [
+              1 => 'Digital Marketing',
+              2 => 'Digital Marketing',
+              3 => 'Digital Marketing',
+              4 => 'Produksi',
+              5 => 'Produksi',
+              6 => 'Produksi',
+              7 => 'Digital Marketing',
+              8 => 'Digital Marketing',
+            ];
+          @endphp
 
-              $deskripsiTahapan = [
-                1 => 'Digital Marketing',
-                2 => 'Digital Marketing',
-                3 => 'Digital Marketing',
-                4 => 'Produksi',
-                5 => 'Produksi',
-                6 => 'Produksi',
-                7 => 'Digital Marketing',
-                8 => 'Digital Marketing',
-              ];
-            @endphp
+          <div class="stage-card">
+            <div class="stage-head">
+              <span class="stage-num">{{ $i }}</span>
+              <div>
+                <h3>{{ Str::title($stepName) }}</h3>
+                <span class="stage-dept">{{ $deskripsiTahapan[$i] }}</span>
+              </div>
+            </div>
 
-            <li class="card">
-              <div class="card-img">
-                <img src="{{ asset('public/gambar/' . $gambar) }}" alt="{{ $stepName }}">
+            <div class="stage-controls">
+              <div class="field">
+                <label>Tanggal</label>
+                <input type="date" name="{{ $dateKey }}" value="{{ old($dateKey, $progress->{$dateKey}) }}">
               </div>
 
-              <div class="card-main">
-                <div class="card-head">
-                  <h2>{{ $i }}. {{ Str::title($stepName) }}</h2>
-                  <span class="step-desc">{{ $deskripsiTahapan[$i] }}</span>
+              @if($i === 8 && $isAdmin)
+                <div class="field">
+                  <label>Keterangan</label>
+                  <textarea name="keterangan8" id="keterangan8" rows="4">{{ old('keterangan8', $buktiList[8]->keterangan ?? '') }}</textarea>
                 </div>
-
-                <div class="controls">
-                  <input type="date"
-                    name="{{ $dateKey }}"
-                    value="{{ old($dateKey, $progress->{$dateKey}) }}"
-                    {{ $isAdmin ? '' : 'readonly' }}>
-
-                  @if($i === 8 && $isAdmin) <!-- Tahap 8: Kesimpulan -->
-                    <label for="keterangan8">Keterangan</label>
-                    <textarea name="keterangan8" id="keterangan8" rows="5">{{ old('keterangan8', $buktiList[8]->keterangan ?? '') }}</textarea>
-                  @else
-                    <select name="{{ $statusKey }}"
-                            id="status-select-{{ $i }}"
-                            {{ $isAdmin ? '' : 'disabled' }}>
-                      <option value="done"
-                        {{ $current === 'done'        ? 'selected' : '' }}>Done</option>
-                      <option value="on_progress"
-                        {{ $current === 'on_progress' ? 'selected' : '' }}>On Progress</option>
-                      <option value="hold"
-                        {{ is_null($current) || $current==='hold' ? 'selected' : '' }}>
-                        Hold
-                      </option>
-                    </select>
-                  @endif
+              @else
+                <div class="field">
+                  <label>Status</label>
+                  <select name="{{ $statusKey }}" id="status-select-{{ $i }}">
+                    <option value="done" {{ $current === 'done' ? 'selected' : '' }}>Selesai</option>
+                    <option value="on_progress" {{ $current === 'on_progress' ? 'selected' : '' }}>Sedang Dikerjakan</option>
+                    <option value="hold" {{ is_null($current) || $current === 'hold' ? 'selected' : '' }}>Ditunda</option>
+                  </select>
                 </div>
+              @endif
+            </div>
 
-                @if($isAdmin && $i !== 7 && $i !== 8)
-                  <div class="file-upload" data-step="{{ $i }}" style="{{ $current === 'done' ? '' : 'display: none;' }}">
-                    <label for="bukti{{ $i }}">Upload bukti</label>
-                    <input type="file" id="bukti{{ $i }}" name="bukti{{ $i }}" />
-
-                    <label for="keterangan{{ $i }}">Keterangan</label>
-                    <input type="text"
-                          id="keterangan{{ $i }}"
-                          name="keterangan{{ $i }}"
-                          value="{{ old("keterangan{$i}", $bukti?->keterangan) }}" />
-
-                    @if($bukti)
-                      <p>File sebelumnya:
-                        <a href="{{ route('bukti.show', $bukti->id) }}" target="_blank" rel="noopener">Lihat</a>
-                      </p>
-                    @endif
-                  </div>
+            @if($isAdmin && $i !== 7 && $i !== 8)
+              <div class="upload-zone" data-step="{{ $i }}" style="{{ $current === 'done' ? '' : 'display:none' }}">
+                <div class="upload-row">
+                  <label for="bukti{{ $i }}" class="upload-label">Bukti</label>
+                  <input type="file" id="bukti{{ $i }}" name="bukti{{ $i }}" accept=".jpg,.jpeg,.png,.pdf">
+                </div>
+                <div class="upload-row">
+                  <label for="keterangan{{ $i }}">Keterangan</label>
+                  <input type="text" id="keterangan{{ $i }}" name="keterangan{{ $i }}"
+                         value="{{ old("keterangan{$i}", $bukti?->keterangan) }}" placeholder="Opsional">
+                </div>
+                @if($bukti)
+                  <a class="link-existing" href="{{ route('bukti.show', $bukti->id) }}" target="_blank" rel="noopener">Lihat bukti &rarr;</a>
                 @endif
               </div>
-            </li>
-          @endforeach
-        </ul>
-
-        @if($isAdmin)
-          <div class="action-bar">
-            <a href="{{ url('/') }}" class="back-button">Kembali</a>
-            <button type="submit" class="btn-save" id="saveBtn">Simpan Semua</button>
+            @endif
           </div>
-        @else
-          <div class="no-access">Anda tidak memiliki akses untuk mengedit data!</div>
-        @endif
-      </form>
-    </div>
+        @endforeach
+      </div>
+
+      @if($isAdmin)
+        <div class="action-bar">
+          <a href="{{ url('/') }}" class="btn-ghost">Kembali</a>
+          <button type="submit" class="btn-primary" id="saveBtn">Simpan Semua</button>
+        </div>
+      @else
+        <div class="notice notice--error">Anda tidak memiliki akses untuk mengedit data.</div>
+      @endif
+    </form>
   </main>
 
 <script>
-  // Untuk setiap select status, atur warna dan tampilkan/hide file-upload
   document.querySelectorAll("select[id^='status-select-']").forEach(select => {
     const step = select.id.replace('status-select-', '');
-    const uploadSection = document.querySelector(`.file-upload[data-step="${step}"]`);
+    const uploadSection = document.querySelector(`.upload-zone[data-step="${step}"]`);
 
     const updateUI = () => {
       const value = select.value;
-      // Warna background sesuai status
       if (value === "done") {
-        select.style.backgroundColor = "#e2f1e3";
-        if (uploadSection && step !== '7') uploadSection.style.display = "grid";
+        select.style.backgroundColor = "#e8f5e9";
+        if (uploadSection && step !== '7') uploadSection.style.display = "block";
         if (uploadSection && step === '7') uploadSection.style.display = "none";
       } else if (value === "on_progress") {
         select.style.backgroundColor = "#fdf0d3";
@@ -185,13 +168,10 @@
       }
     };
 
-    // Inisialisasi saat halaman load
     updateUI();
-    // Bind event change
     select.addEventListener("change", updateUI);
   });
 
-  // Alert khusus untuk step 7
   document.addEventListener("DOMContentLoaded", () => {
     const step7 = document.querySelector('#status-select-7');
     if (step7) {
@@ -202,13 +182,11 @@
       });
     }
 
-    // Prevent double submit
     document.getElementById('adminForm').addEventListener('submit', function() {
       const saveBtn = document.getElementById('saveBtn');
       if (saveBtn) {
         saveBtn.disabled = true;
         saveBtn.textContent = 'Menyimpan...';
-
         setTimeout(function() {
           saveBtn.disabled = false;
           saveBtn.textContent = 'Simpan Semua';

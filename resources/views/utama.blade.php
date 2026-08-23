@@ -5,11 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('public/css/utama.css') }}" />
-    <title>Tracker Pesanan â€” Madu Wild Bee</title>
+    <title>Tracker Pesanan — Madu Wild Bee</title>
   </head>
-  <body>
+  <body class="tracker-page">
     @php
       $doneCount = $buktiList->filter(fn ($b) => strtolower((string) $b->status) === 'done')->count();
       $percent   = intdiv($doneCount * 100, 8);
@@ -17,87 +17,68 @@
 
     <header class="topbar">
       <div class="brand">
-        <span class="hex-mark"></span>
         <div class="brand-name">Madu Wild Bee
           <span class="brand-sub">Maklon Tracker</span>
         </div>
       </div>
       <form method="POST" action="{{ route('logout') }}">
         @csrf
-        <button type="submit" class="btn-logout extra-btn" style="margin-top: 0;">Keluar</button>
+        <button type="submit" class="btn-logout">Keluar</button>
       </form>
     </header>
 
     @if(session('success'))
-      <div class="alert-success">{{ session('success') }}</div>
+      <div class="toast">{{ session('success') }}</div>
     @endif
 
     <main>
-      <section class="hero">
-        <p class="eyebrow">Progres Pesanan Maklon</p>
+      <section class="progress-hero">
+        <p class="eyebrow">Progres Pesanan</p>
         <h1>Perjalanan madu Anda</h1>
-        <div class="drip"><div class="drip-fill" style="width: {{ $percent }}%;"></div></div>
-        <p class="drip-label">{{ $doneCount }} dari 8 tahap selesai</p>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width: {{ $percent }}%"></div>
+        </div>
+        <p class="progress-meta">{{ $doneCount }} dari 8 tahap selesai</p>
       </section>
 
       @if($buktiList->isEmpty())
         <div class="empty-state">
-          <h2>Pesanan kamu belum dimulai</h2>
+          <h3>Pesanan kamu belum dimulai</h3>
           <p>Tim Madu Wild Bee akan mengisi progres di halaman ini setiap tahap berjalan. Ada pertanyaan soal pesanan? Hubungi CS kami.</p>
         </div>
       @endif
 
-      <ol class="timeline">
+      <div class="steps">
         @foreach($stages as $stepName => $gambar)
           @php
             $step      = $loop->iteration;
             $bukti     = $buktiList->get($step);
             $rawStatus = optional($bukti)->status ?? 'hold';
             $status    = strtolower(str_replace(' ', '_', $rawStatus));
-            $stateClass = match($status) {
-              'done'        => 'step--done',
-              'on_progress' => 'step--progress',
-              default       => 'step--hold',
-            };
-            $pillClass  = match($status) {
-              'done'        => 'pill--done',
-              'on_progress' => 'pill--progress',
-              default       => 'pill--hold',
-            };
             $statusLabel = $bukti
               ? ucfirst(str_replace('_', ' ', $status))
               : 'Belum dimulai';
           @endphp
 
-          <li class="step {{ $stateClass }}">
-            <div class="step-hex">{{ $step }}</div>
-            <div class="step-body">
-              <div class="step-head">
-                <h2>{{ Str::title($stepName) }}</h2>
-                <span class="pill {{ $pillClass }}">{{ $statusLabel }}</span>
+          <div class="step-card step--{{ $status }}">
+            <div class="step-num">{{ $step }}</div>
+            <div class="step-content">
+              <div class="step-header">
+                <h3>{{ Str::title($stepName) }}</h3>
+                <span class="badge badge--{{ $status }}">{{ $statusLabel }}</span>
+              </div>
+              <div class="step-meta">
+                <span class="step-date">{{ optional($bukti)->tanggal ?? '—' }}</span>
+                @if($step === 8 && optional($bukti)->keterangan)
+                  <p class="step-note">{{ $bukti->keterangan }}</p>
+                @endif
               </div>
 
-              <div class="step-grid">
-                <img class="step-img" src="{{ asset('public/gambar/' . $gambar) }}" alt="{{ $stepName }}" />
-
-                <div class="controls">
-                  <input type="date" disabled value="{{ optional($bukti)->tanggal }}" />
-                  @if($step === 8)
-                    <textarea name="keterangan8" id="keterangan8" rows="5" disabled>{{ old('keterangan8', $buktiList->get(8)->keterangan ?? '') }}</textarea>
-                  @else
-                    <select disabled>
-                      <option>{{ $statusLabel }}</option>
-                    </select>
-                  @endif
-                </div>
-              </div>
-
-              {{-- Tombol Lihat Bukti khusus tahap 1â€“6 --}}
               @if($step >= 1 && $step <= 6 && $bukti && $bukti->path)
                 @if(str_ends_with(strtolower($bukti->path), '.pdf'))
-                  <a class="extra-btn" href="{{ route('bukti.show', $bukti->id) }}" target="_blank" rel="noopener">Lihat Bukti</a>
+                  <a class="btn-proof" href="{{ route('bukti.show', $bukti->id) }}" target="_blank" rel="noopener">Lihat Bukti</a>
                 @else
-                  <button type="button" class="extra-btn js-show-popup"
+                  <button type="button" class="btn-proof js-show-popup"
                     data-popup-src="{{ route('bukti.show', $bukti->id) }}"
                     data-popup-desc="{{ $bukti->keterangan }}">
                     Lihat Bukti
@@ -105,23 +86,17 @@
                 @endif
               @endif
 
-              {{-- Tombol WhatsApp khusus tahap 7 --}}
               @if($step === 7 && $bukti && $status === 'done')
-                <button type="button" class="extra-btn">Terkirim via WhatsApp</button>
+                <span class="badge badge--done">Terkirim via WhatsApp</span>
               @endif
             </div>
-          </li>
+          </div>
         @endforeach
-      </ol>
-
-      <div class="page-actions">
-        <a href="{{ url('/') }}" class="back-button">Kembali</a>
       </div>
     </main>
 
     <div id="overlay" class="popup-overlay">
       <div class="popup-card">
-        <h3>Bukti Tahapan</h3>
         <img id="popup-img" src="" alt="Bukti tahapan" />
         <div id="popup-desc"></div>
         <button type="button" class="popup-close" onclick="closePopup()">Tutup</button>
