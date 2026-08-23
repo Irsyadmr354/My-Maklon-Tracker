@@ -64,6 +64,6 @@ class LoginFlowTest extends TestCase
     {
         $response = $this->get('/order-tracker');
 
-        $response->assertRedirect(route('login.form'));
+        $response->assertRedirect(route('login'));
     }
 }
