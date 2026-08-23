@@ -1,104 +1,92 @@
 ﻿<!DOCTYPE html>
-<html lang="id">
+<html lang="id" data-theme="dark">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{{ asset('public/css/login.css') }}">
-  <title>Masuk — Madu Wild Bee Maklon Tracker</title>
+  <title>Madu Wild Bee — Masuk</title>
   <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
-<body class="login-page">
-  <div class="login-wrap">
+<body>
+  <button class="btn-theme" id="themeToggle" type="button" aria-label="Toggle theme">
+    <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+  </button>
+
+  <main class="login-wrap">
     <div class="login-card">
       <div class="login-brand">
         <h1>Madu Wild Bee</h1>
-        <span class="brand-sub">Maklon Tracker</span>
+        <span class="brand-tag">Maklon Tracker</span>
       </div>
 
       <h2 class="login-title">Masuk ke akun Anda</h2>
 
       @if ($errors->any())
-          <div class="msg msg--error">
-              <strong>Periksa kembali isian berikut:</strong>
-              <ul>
-                  @foreach ($errors->all() as $error)
-                      <li>{{ $error }}</li>
-                  @endforeach
-              </ul>
-          </div>
+        <div class="alert alert-error">
+          @foreach ($errors->all() as $error)
+            <span>{{ $error }}</span>
+          @endforeach
+        </div>
       @endif
-
       @if (session('error'))
-          <div class="msg msg--error"><strong>Error:</strong> {{ session('error') }}</div>
+        <div class="alert alert-error"><span>{{ session('error') }}</span></div>
       @endif
-
       @if (session('success'))
-          <div class="msg msg--success"><strong>Sukses:</strong> {{ session('success') }}</div>
+        <div class="alert alert-success"><span>{{ session('success') }}</span></div>
       @endif
 
       <form method="POST" action="{{ route('login') }}" id="loginForm">
         @csrf
-        <div class="form-group">
+        <div class="field">
           <label for="email">Email</label>
-          <input type="email" id="email" name="email" placeholder="nama@email.com"
-                 value="{{ old('email') }}" required autocomplete="email" />
+          <input type="email" id="email" name="email" value="{{ old('email') }}" placeholder="nama@email.com" required autocomplete="email">
         </div>
-        <div class="form-group">
+        <div class="field">
           <label for="password">Kata Sandi</label>
-          <input type="password" id="password" name="password" placeholder="Minimal 8 karakter"
-                 required minlength="8" autocomplete="current-password" />
+          <input type="password" id="password" name="password" placeholder="Masukkan kata sandi" required minlength="8" autocomplete="current-password">
         </div>
-        <details class="activation-section">
-          <summary>Aktivasi pertama?</summary>
-          <div class="form-group">
-            <label for="no_hp">No HP</label>
-            <input type="text" id="no_hp" name="no_hp" placeholder="081234567890"
-                   value="{{ old('no_hp') }}" inputmode="numeric" maxlength="20" autocomplete="tel" />
-          </div>
-        </details>
-        <div class="form-group button-wrapper">
-          <button type="submit" class="btn-login" id="submitBtn">Masuk</button>
-        </div>
+        <button type="submit" class="btn-primary btn-full" id="submitBtn">Masuk</button>
       </form>
 
-      <p class="login-hint">Hubungi admin jika belum punya akun.</p>
+      <p class="login-footer">Hubungi admin jika belum punya akun.</p>
     </div>
-  </div>
+  </main>
 
   <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      setInterval(function() {
-        fetch('/login', {
-          method: 'GET',
-          headers: {
-            'X-Requested-With': 'XMLHttpRequest'
-          }
-        }).then(response => response.text())
-        .then(html => {
-          const parser = new DOMParser();
-          const doc = parser.parseFromString(html, 'text/html');
-          const newToken = doc.querySelector('meta[name="csrf-token"]')?.content;
-
-          if (newToken) {
-            document.querySelector('meta[name="csrf-token"]').content = newToken;
-            document.querySelector('input[name="_token"]').value = newToken;
-          }
-        }).catch(() => {});
-      }, 30 * 60 * 1000);
-
-      document.getElementById('loginForm').addEventListener('submit', function() {
-        const submitBtn = document.getElementById('submitBtn');
-        submitBtn.disabled = true;
-        submitBtn.textContent = 'Sedang Masuk...';
-
-        setTimeout(function() {
-          submitBtn.disabled = false;
-          submitBtn.textContent = 'Masuk';
-        }, 5000);
+    (function() {
+      var saved = localStorage.getItem('theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', saved);
+      document.getElementById('themeToggle').addEventListener('click', function() {
+        var current = document.documentElement.getAttribute('data-theme');
+        var next = current === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', next);
+        localStorage.setItem('theme', next);
       });
+    })();
+
+    setInterval(function() {
+      fetch('/login', { method: 'GET', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+        .then(function(r) { return r.text(); })
+        .then(function(html) {
+          var doc = new DOMParser().parseFromString(html, 'text/html');
+          var t = doc.querySelector('meta[name="csrf-token"]');
+          if (t && t.content) {
+            document.querySelector('meta[name="csrf-token"]').content = t.content;
+            var inp = document.querySelector('input[name="_token"]');
+            if (inp) inp.value = t.content;
+          }
+        }).catch(function() {});
+    }, 30 * 60 * 1000);
+
+    document.getElementById('loginForm').addEventListener('submit', function() {
+      var b = document.getElementById('submitBtn');
+      b.disabled = true;
+      b.textContent = 'Masuk...';
+      setTimeout(function() { b.disabled = false; b.textContent = 'Masuk'; }, 5000);
     });
   </script>
 </body>
