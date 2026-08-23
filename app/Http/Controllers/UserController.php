@@ -210,6 +210,7 @@ class UserController extends Controller
             $rules["tanggal{$i}"]    = 'nullable|date';
             $rules["keterangan{$i}"]   = 'nullable|string|max:255';
             $rules["uploaded_by{$i}"] = 'nullable|string|max:100';
+            $rules["assigned_to{$i}"] = 'nullable|string|max:50';
             $rules["bukti{$i}"]       = 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048';
         }
         $rules['user_id'] = 'nullable|integer|exists:users,id';
@@ -257,6 +258,7 @@ class UserController extends Controller
                     $bukti->tanggal     = $request->input("tanggal{$i}");
                     $bukti->keterangan  = $request->input("keterangan{$i}", $defaultKet);
                     $bukti->uploaded_by = $request->input("uploaded_by{$i}", $bukti->uploaded_by);
+                    $bukti->assigned_to = $request->input("assigned_to{$i}", $bukti->assigned_to);
                     $bukti->save();
 
                     if ($bukti->status !== $statusAwal[$i]) {

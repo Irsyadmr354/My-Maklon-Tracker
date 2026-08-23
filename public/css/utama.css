@@ -206,6 +206,11 @@ h1 {
   font-size: 0.72rem; color: var(--text-2);
   margin-top: 0.25rem;
 }
+.pipeline-assigned {
+  font-family: var(--font-mono); font-size: 0.65rem; color: var(--accent);
+  background: var(--gold-bg); padding: 0.15rem 0.5rem; border-radius: 999px;
+  margin-top: 0.25rem; font-weight: 600; display: inline-block;
+}
 .pipeline-note {
   font-size: 0.85rem; color: var(--text-2);
   margin-top: 0.3rem; font-style: italic;

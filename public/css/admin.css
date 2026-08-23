@@ -160,6 +160,11 @@ input, select, textarea { font-family: inherit; font-size: inherit; }
   font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-2);
   margin-top: 0.3rem;
 }
+.pipeline-assigned {
+  display: inline-block; font-family: var(--font-mono); font-size: 0.65rem;
+  color: var(--accent); background: var(--gold-bg); padding: 0.15rem 0.5rem;
+  border-radius: 999px; margin-top: 0.3rem; font-weight: 600;
+}
 
 /* ── Badge ── */
 .badge {
@@ -204,6 +209,13 @@ input, select, textarea { font-family: inherit; font-size: inherit; }
   background: var(--bg-2); border: 1.5px solid var(--border); border-radius: var(--radius);
   color: var(--text); font-size: 0.9rem; transition: border-color 0.2s;
 }
+.date-field {
+  cursor: pointer; position: relative;
+}
+.date-field input[type=date] {
+  cursor: pointer; caret-color: transparent;
+}
+.date-field input[type=date]:focus { caret-color: var(--text); }
 .field input:focus, .field select:focus, .field textarea:focus {
   outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--gold-bg);
 }

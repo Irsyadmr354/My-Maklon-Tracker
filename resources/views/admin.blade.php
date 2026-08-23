@@ -94,6 +94,9 @@
               @if($bukti && $bukti->tanggal)
                 <p class="pipeline-date">{{ $bukti->tanggal }}</p>
               @endif
+              @if($bukti && $bukti->assigned_to)
+                <span class="pipeline-assigned">{{ $bukti->assigned_to === 'digital_marketing' ? 'Digital Marketing' : ucfirst($bukti->assigned_to) }}</span>
+              @endif
 
               @if($isAdmin)
                 <button type="button" class="btn-expand" onclick="toggleStep({{ $i }})">
@@ -124,8 +127,19 @@
                     <input type="hidden" name="{{ $statusKey }}" id="status-input-{{ $i }}" value="{{ $current ?? 'hold' }}">
                   @endif
 
-                  {{-- Date --}}
+                  {{-- Assigned to --}}
                   <div class="field">
+                    <label>Tanggung Jawab</label>
+                    <select name="assigned_to{{ $i }}">
+                      <option value="">-- Pilih --</option>
+                      <option value="admin" {{ ($bukti?->assigned_to ?? '') === 'admin' ? 'selected' : '' }}>Admin</option>
+                      <option value="digital_marketing" {{ ($bukti?->assigned_to ?? '') === 'digital_marketing' ? 'selected' : '' }}>Digital Marketing</option>
+                      <option value="produksi" {{ ($bukti?->assigned_to ?? '') === 'produksi' ? 'selected' : '' }}>Produksi</option>
+                    </select>
+                  </div>
+
+                  {{-- Date --}}
+                  <div class="field date-field" onclick="try{this.querySelector('input[type=date]').showPicker()}catch(e){}">
                     <label>Tanggal</label>
                     <input type="date" name="{{ $dateKey }}" value="{{ old($dateKey, $progress->{$dateKey}) }}">
                   </div>

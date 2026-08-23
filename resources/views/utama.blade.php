@@ -80,6 +80,9 @@
               @if($bukti && $bukti->tanggal)
                 <p class="pipeline-date">{{ $bukti->tanggal }}</p>
               @endif
+              @if($bukti && $bukti->assigned_to)
+                <p class="pipeline-assigned">Tanggung jawab: <strong>{{ $bukti->assigned_to === 'digital_marketing' ? 'Digital Marketing' : ucfirst($bukti->assigned_to) }}</strong></p>
+              @endif
               @if($bukti && $bukti->keterangan && $step === 8)
                 <p class="pipeline-note">{{ $bukti->keterangan }}</p>
               @endif
