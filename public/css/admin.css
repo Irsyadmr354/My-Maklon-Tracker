@@ -349,8 +349,8 @@ input, select, textarea { font-family: inherit; font-size: inherit; }
     background: transparent; border-radius: 999px; z-index: 1;
   }
   .node-pending::after { display: none; }
-  .node-done::after { left: calc(50% + 18px); right: calc(-50% + 18px + 0.25rem); width: auto; background: var(--green); }
-  .node-active::after { left: calc(50% + 18px); width: calc(50% - 18px - 0.25rem); background: #D97706; }
+  .node-done::after { left: calc(50% + 18px); right: calc(-50% + 18px - 0.5rem); width: auto; background: var(--green); }
+  .node-active::after { left: calc(50% + 18px); width: calc(50% - 18px + 0.25rem); background: #D97706; }
   .stepper-node:last-child::after { display: none; }
   .stepper-node {
     flex: 1; min-width: 0;
@@ -445,8 +445,8 @@ input, select, textarea { font-family: inherit; font-size: inherit; }
 @media (min-width: 1100px) {
   .pipeline-stepper { gap: 0.65rem; }
   .stepper-line { left: calc((100% - 4.55rem) / 16); right: calc((100% - 4.55rem) / 16); }
-  .node-done::after { right: calc(-50% + 18px + 0.325rem); }
-  .node-active::after { width: calc(50% - 18px - 0.325rem); }
+  .node-done::after { right: calc(-50% + 18px - 0.65rem); }
+  .node-active::after { width: calc(50% - 18px + 0.325rem); }
 }
 
 /* ── Action Bar ── — Gambar1: mobile 4-col single row, gunakan gap kanan (nowrap + flex:1) */
