@@ -80,7 +80,7 @@
             if (inp) inp.value = t.content;
           }
         }).catch(function() {});
-    }, 30 * 60 * 1000);
+    }, 5 * 60 * 1000);
 
     document.getElementById('loginForm').addEventListener('submit', function() {
       var b = document.getElementById('submitBtn');

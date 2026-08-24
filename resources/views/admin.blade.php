@@ -181,7 +181,7 @@
 
       @if($isAdmin)
         <div class="action-bar">
-          <a href="{{ route('admin') }}" class="btn-ghost">&larr; Kembali</a>
+          <a href="{{ route('admin.index') }}" class="btn-ghost">&larr; Kembali</a>
           <a href="{{ route('customers.index') }}" class="btn-ghost">Kelola Customer</a>
           <button type="submit" class="btn-primary" id="saveBtn">Simpan Semua</button>
         </div>

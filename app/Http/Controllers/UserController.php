@@ -93,6 +93,11 @@ class UserController extends Controller
             'password' => 'required|string|min:8',
         ]);
 
+        $adminPhone = config('maklon.admin_phone');
+        if ($adminPhone && hash_equals((string) $adminPhone, (string) $data['no_hp'])) {
+            return back()->withErrors(['no_hp' => 'Nomor ini digunakan untuk akun admin. Gunakan nomor lain.'])->withInput();
+        }
+
         User::create([
             'email'    => $data['email'],
             'no_hp'    => $data['no_hp'],
@@ -165,7 +170,7 @@ class UserController extends Controller
     public function index()
     {
         if ($this->adminAktif()) {
-            abort(403, 'Admin tidak boleh akses order-tracker.');
+            return redirect()->route('admin.index');
         }
 
         $data = $this->loadTrackerData((int) Auth::id());
