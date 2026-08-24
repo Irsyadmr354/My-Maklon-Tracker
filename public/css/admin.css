@@ -192,12 +192,17 @@ input, select, textarea { font-family: inherit; font-size: inherit; }
   .pipeline-date { text-align: center; }
   .btn-expand { align-self: center; }
   .pipeline-step .edit-panel.open {
-    position: absolute; top: calc(100% + 8px); left: 0; right: 0;
+    position: absolute; top: calc(100% + 8px); left: 50%; right: auto;
+    transform: translateX(-50%);
+    width: 280px; max-width: min(90vw, 320px);
     max-height: none; opacity: 1; margin-top: 0;
     background: var(--bg-2); border: 1.5px solid var(--accent);
     border-radius: var(--radius); padding: 1rem; z-index: 80;
     box-shadow: var(--shadow);
   }
+  .pipeline-step:first-child .edit-panel.open,
+  .pipeline-step:nth-child(2) .edit-panel.open { left: 0; right: auto; transform: none; }
+  .pipeline-step:nth-last-child(-n+2) .edit-panel.open { left: auto; right: 0; transform: none; }
   .pipeline-step.expanded { z-index: 90; }
 }
 
