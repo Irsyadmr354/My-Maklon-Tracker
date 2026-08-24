@@ -334,13 +334,14 @@ input, select, textarea { font-family: inherit; font-size: inherit; }
     position: absolute; top: 18px; left: 4%; right: 4%; height: 2px;
     background: var(--border); border-radius: 999px; z-index: 0;
   }
-  /* 50% pipeline colored — right half of each node follows its status */
+  /* pipeline colored — Selesai 100%, Dikerjakan 50% */
   .stepper-node::after {
-    content: ''; position: absolute; top: 18px; left: 50%; width: 50%; height: 2px;
+    content: ''; position: absolute; top: 18px; height: 2px;
     background: transparent; border-radius: 999px; z-index: 1;
   }
-  .node-done::after { background: var(--green); }
-  .node-active::after { background: #D97706; }
+  .node-pending::after { display: none; }
+  .node-done::after { left: 50%; right: -50%; width: auto; background: var(--green); }
+  .node-active::after { left: 50%; width: 50%; background: #D97706; }
   .stepper-node:last-child::after { display: none; }
   .stepper-node {
     flex: 1; min-width: 0;
@@ -388,6 +389,16 @@ input, select, textarea { font-family: inherit; font-size: inherit; }
     border-color: rgba(0,0,0,0.08);
     box-shadow: 0 8px 32px rgba(0,0,0,0.12);
   }
+}
+
+/* desktop detail stretched edge-to-edge */
+@media (min-width: 769px) {
+  .detail-stack {
+    max-width: none; width: 100%;
+    margin: 1rem 0 6rem; padding: 0 clamp(1rem, 3vw, 2.5rem);
+    box-sizing: border-box;
+  }
+  .detail-panel { max-width: none; width: 100%; }
 }
 
 /* mobile: hide stepper row, show vertical timeline — dropdown literally below the tapped card */
