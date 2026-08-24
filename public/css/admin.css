@@ -189,6 +189,14 @@ input, select, textarea { font-family: inherit; font-size: inherit; }
 .step-active { border-left-color: #D97706 !important; }
 .step-pending { border-left-color: rgba(255,255,255,0.07) !important; }
 [data-theme="light"] .step-pending { border-left-color: rgba(0,0,0,0.06) !important; }
+/* vertical pipeline 100% (Selesai) / 50% (Dikerjakan) — mobile & base */
+.pipeline-step::after {
+  content: ''; position: absolute; left: -35px; top: 0; bottom: 0; width: 2px;
+  background: transparent; border-radius: 999px; z-index: 0;
+}
+.step-done::after { background: var(--green); }
+.step-active::after { top: 50%; height: 50%; bottom: auto; background: #D97706; }
+.pipeline-step:last-child::after { display: none; }
 
 .pipeline-dot {
   position: absolute; left: -52px; top: 1.25rem;
@@ -711,6 +719,7 @@ details[open] .add-toggle { border-bottom: 1px solid var(--border); }
   .pipeline { padding-left: 38px; }
   .pipeline::before { left: 12px; }
   .pipeline-dot { left: -38px; width: 28px; height: 28px; font-size: 0.7rem; }
+  .pipeline-step::after { left: -26px; }
   .customer-switcher-wrap { padding: 0 0.75rem 0 38px; }
   .status-buttons { flex-direction: column; }
   .status-btn { min-height: 48px; }
@@ -733,6 +742,7 @@ details[open] .add-toggle { border-bottom: 1px solid var(--border); }
   .pipeline { padding-left: 34px; }
   .pipeline::before { left: 10px; }
   .pipeline-dot { left: -34px; width: 26px; height: 26px; }
+  .pipeline-step::after { left: -24px; }
   .customer-switcher-wrap { padding: 0 0.5rem 0 34px; }
   .page-header h1 { font-size: 1.5rem; }
 }
