@@ -415,7 +415,7 @@
       if (bd) bd.style.display = 'none';
       document.body.style.overflow = '';
     }
-    document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeAllEditPanels(); });
+    // ditangani handler ESC di bawah (guide + panel) — hapus duplikat agar tidak double
 
     // Auto-expand first incomplete step
     document.addEventListener('DOMContentLoaded', function() {
@@ -477,11 +477,30 @@
         li.style.display = !needle || hay.includes(needle) ? '' : 'none';
       });
     }
-    document.addEventListener('keydown', function(e) { if (e.key === 'Escape') { const gm = document.getElementById('guideModal'); if (gm && gm.style.display !== 'none') closeGuide(); } });
-    document.addEventListener('DOMContentLoaded', function() {
+    function isGuideOpen() {
+      const m = document.getElementById('guideModal');
+      if (!m) return false;
+      const d = m.style.display || getComputedStyle(m).display;
+      return d !== 'none' && d !== '';
+    }
+    // hapus duplikat: 1 handler ESC untuk guide + panel
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' || e.key === 'Esc') {
+        if (isGuideOpen()) { closeGuide(); e.stopPropagation(); return; }
+        // fallback tutup panel detail jika guide tidak terbuka
+        closeAllEditPanels();
+      }
+    });
+    // klik luar — guideModal ada di bawah script, jadi tunggu DOM siap
+    function attachGuideOutside() {
       const gm = document.getElementById('guideModal');
       if (gm) gm.addEventListener('click', function(e) { if (e.target === gm) closeGuide(); });
-    });
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', attachGuideOutside);
+    } else {
+      attachGuideOutside();
+    }
 
     // Customer switcher
     function goCustomer() {
