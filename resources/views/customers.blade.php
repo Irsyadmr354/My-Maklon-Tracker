@@ -15,6 +15,7 @@
       <span class="brand-name">Madu Wild Bee</span>
     </div>
     <div class="topbar-actions">
+      <a href="{{ route('admin.index') }}" class="btn-ghost btn-sm">&larr; Kembali</a>
       <span class="chip">{{ auth()->user()->email }}</span>
       <button class="btn-theme" id="themeToggle" type="button" aria-label="Toggle theme">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>

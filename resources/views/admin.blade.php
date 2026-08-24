@@ -167,7 +167,7 @@
                         <label>Keterangan</label>
                         <input type="text" name="keterangan{{ $i }}" value="{{ old("keterangan{$i}", $bukti?->keterangan) }}" placeholder="Opsional">
                       </div>
-                      @if($bukti)
+                      @if($bukti && $bukti->path)
                         <a class="link-existing" href="{{ route('bukti.show', $bukti->id) }}" target="_blank" rel="noopener">Lihat bukti saat ini &rarr;</a>
                       @endif
                     </div>
