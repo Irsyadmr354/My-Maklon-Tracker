@@ -337,19 +337,20 @@ input, select, textarea { font-family: inherit; font-size: inherit; }
     display: flex; justify-content: space-between; align-items: flex-start;
     gap: 0.5rem; position: relative;
     padding: 0 0 1.65rem; max-width: none; width: 100%; margin: 0;
+    overflow: visible;
   }
   .stepper-line {
-    position: absolute; top: 18px; left: 4%; right: 4%; height: 2px;
+    position: absolute; top: 18px; left: calc((100% - 3.5rem) / 16); right: calc((100% - 3.5rem) / 16); height: 2px;
     background: var(--border); border-radius: 999px; z-index: 0;
   }
-  /* pipeline colored — Selesai 100%, Dikerjakan 50% */
+  /* pipeline colored — Selesai 100%, Dikerjakan 50% — clipped at dot centers, not bleed */
   .stepper-node::after {
     content: ''; position: absolute; top: 18px; height: 2px;
     background: transparent; border-radius: 999px; z-index: 1;
   }
   .node-pending::after { display: none; }
-  .node-done::after { left: 50%; right: -50%; width: auto; background: var(--green); }
-  .node-active::after { left: 50%; width: 50%; background: #D97706; }
+  .node-done::after { left: calc(50% + 18px); right: calc(-50% + 18px + 0.25rem); width: auto; background: var(--green); }
+  .node-active::after { left: calc(50% + 18px); width: calc(50% - 18px - 0.25rem); background: #D97706; }
   .stepper-node:last-child::after { display: none; }
   .stepper-node {
     flex: 1; min-width: 0;
@@ -365,6 +366,7 @@ input, select, textarea { font-family: inherit; font-size: inherit; }
     font-family: var(--font-mono); font-weight: 700; font-size: 0.78rem;
     border: 2px solid var(--border); background: var(--bg-3); color: var(--text-2);
     transition: transform 0.15s, box-shadow 0.2s, background 0.2s, border-color 0.2s;
+    position: relative; z-index: 2;
   }
   .stepper-node:hover .stepper-dot { transform: translateY(-1px); }
   .node-done .stepper-dot { background: var(--green); color: #000; border-color: var(--green); }
@@ -378,20 +380,30 @@ input, select, textarea { font-family: inherit; font-size: inherit; }
   .stepper-date { font-family: var(--font-mono); font-size: 0.62rem; color: var(--text-2); }
   .pipeline-vertical .edit-panel { display: none !important; }
 
-  /* desktop floating pill — composition balanced for 4 buttons */
+  /* desktop floating pill — Gambar1 Rapikan: centered, balanced, gap 0.45rem, uniform heights */
   .action-bar {
     left: 50%; right: auto; bottom: max(1rem, env(safe-area-inset-bottom));
     transform: translateX(-50%);
-    padding: 0.5rem 0.75rem;
+    display: flex; align-items: center; justify-content: center; flex-wrap: wrap;
+    gap: 0.45rem;
+    padding: 0.45rem 0.65rem;
     background: rgba(20,26,34,0.92);
     border: 1px solid rgba(255,255,255,0.1);
     border-radius: 999px;
     backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
     box-shadow: 0 10px 36px rgba(0,0,0,0.38), 0 1px 3px rgba(0,0,0,0.2);
-    width: auto; max-width: min(96vw, 620px);
-    white-space: nowrap; gap: 0.5rem;
-    border-top: 1px solid rgba(255,255,255,0.1);
+    width: auto; max-width: min(92vw, 580px);
+    white-space: normal;
   }
+  .action-bar .btn-ghost,
+  .action-bar .btn-primary {
+    min-height: 38px;
+    padding: 0.5rem 1rem;
+    font-size: 0.82rem;
+    line-height: 1;
+    white-space: nowrap;
+  }
+  .action-bar .btn-primary { padding: 0.5rem 1.15rem; font-weight: 700; }
   [data-theme="light"] .action-bar {
     background: rgba(255,255,255,0.92);
     border-color: rgba(0,0,0,0.08);
@@ -410,13 +422,14 @@ input, select, textarea { font-family: inherit; font-size: inherit; }
 }
 
 /* mobile: hide stepper row, show vertical timeline — dropdown literally below the tapped card */
+/* Gambar2 Samakan lebar: detail-stack same outer constraints as pipeline & switcher */
 @media (max-width: 768px) {
   .pipeline-stepper { display: none !important; }
   .stepper-line { display: none !important; }
   .pipeline.pipeline-vertical { display: block !important; }
-  .detail-stack { max-width: 720px; margin: 0.9rem auto 0; padding: 0; }
+  .detail-stack { max-width: 720px; margin: 0.9rem auto 0; padding: 0 max(1rem, 3vw) 0 52px; box-sizing: border-box; }
   /* detail-stack on mobile sits above vertical list; give it horizontal padding when open */
-  .pipeline-scroll .detail-stack { padding: 0 max(1rem, 3vw); box-sizing: border-box; }
+  .pipeline-scroll .detail-stack { padding: 0 max(1rem, 3vw) 0 52px; box-sizing: border-box; }
   .detail-panel { padding: 1.1rem; }
   /* when JS moves panel after the tapped vertical card, it becomes a dropdown sibling */
   .pipeline .detail-panel.open {
@@ -427,27 +440,40 @@ input, select, textarea { font-family: inherit; font-size: inherit; }
 }
 @media (min-width: 1100px) {
   .pipeline-stepper { gap: 0.65rem; }
+  .stepper-line { left: calc((100% - 4.55rem) / 16); right: calc((100% - 4.55rem) / 16); }
+  .node-done::after { right: calc(-50% + 18px + 0.325rem); }
+  .node-active::after { width: calc(50% - 18px - 0.325rem); }
 }
 
-/* ── Action Bar ── */
+/* ── Action Bar ── — Gambar1 Rapikan base (mobile full-width, desktop pill below overrides) */
 .action-bar {
   position: fixed; left: 0; right: 0; bottom: 0; z-index: 60;
-  display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+  display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 0.4rem;
   padding: 0.6rem max(1rem, 3vw) calc(0.6rem + env(safe-area-inset-bottom));
   background: var(--bg-2); border-top: 1px solid var(--border);
+}
+.action-bar .btn-ghost,
+.action-bar .btn-primary {
+  min-height: 38px;
+  font-size: 0.82rem;
+  line-height: 1;
+  white-space: nowrap;
 }
 @media (min-width: 769px) {
   .action-bar {
     left: 50%; right: auto; bottom: max(1rem, env(safe-area-inset-bottom));
     transform: translateX(-50%);
-    padding: 0.55rem 0.9rem;
-    background: rgba(20,26,34,0.88);
-    border: 1px solid rgba(255,255,255,0.08);
+    display: flex; align-items: center; justify-content: center; flex-wrap: wrap;
+    gap: 0.45rem;
+    padding: 0.45rem 0.65rem;
+    background: rgba(20,26,34,0.92);
+    border: 1px solid rgba(255,255,255,0.1);
     border-radius: 999px;
-    backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-    box-shadow: 0 8px 32px rgba(0,0,0,0.35), 0 1px 3px rgba(0,0,0,0.2);
-    width: auto; max-width: min(92vw, 520px);
-    white-space: nowrap;
+    backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    box-shadow: 0 10px 36px rgba(0,0,0,0.38), 0 1px 3px rgba(0,0,0,0.2);
+    width: auto; max-width: min(92vw, 580px);
+    white-space: normal;
+    border-top: 1px solid rgba(255,255,255,0.1);
   }
   [data-theme="light"] .action-bar {
     background: rgba(255,255,255,0.92);
@@ -721,13 +747,15 @@ details[open] .add-toggle { border-bottom: 1px solid var(--border); }
   .pipeline-dot { left: -38px; width: 28px; height: 28px; font-size: 0.7rem; }
   .pipeline-step::after { left: -26px; }
   .customer-switcher-wrap { padding: 0 0.75rem 0 38px; }
+  .detail-stack { padding: 0 0.75rem 0 38px; }
+  .pipeline-scroll .detail-stack { padding: 0 0.75rem 0 38px; }
   .status-buttons { flex-direction: column; }
   .status-btn { min-height: 48px; }
   .pipeline-step { padding: 1.1rem; }
   .admin-main { padding-bottom: 7.5rem; }
   .action-bar { gap: 0.35rem; padding: 0.45rem 0.65rem; max-width: 94vw; }
-  .action-bar .btn-ghost { padding: 0.4rem 0.7rem; font-size: 0.72rem; min-height: 32px; }
-  .action-bar .btn-primary { padding: 0.45rem 1rem; font-size: 0.78rem; min-height: 34px; }
+  .action-bar .btn-ghost,
+  .action-bar .btn-primary { padding: 0.45rem 0.85rem; font-size: 0.74rem; min-height: 34px; }
   .customer-card { flex-wrap: wrap; }
   .add-form { grid-template-columns: 1fr; }
   .page-header { padding: 1.5rem 0.75rem 0; }
@@ -744,5 +772,7 @@ details[open] .add-toggle { border-bottom: 1px solid var(--border); }
   .pipeline-dot { left: -34px; width: 26px; height: 26px; }
   .pipeline-step::after { left: -24px; }
   .customer-switcher-wrap { padding: 0 0.5rem 0 34px; }
+  .detail-stack { padding: 0 0.5rem 0 34px; }
+  .pipeline-scroll .detail-stack { padding: 0 0.5rem 0 34px; }
   .page-header h1 { font-size: 1.5rem; }
 }
