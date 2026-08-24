@@ -315,9 +315,9 @@ input, select, textarea { font-family: inherit; font-size: inherit; }
   html, body { overflow-x: visible; }
   .admin-main { overflow: visible; }
   .pipeline-scroll {
-    max-width: 980px; margin: 1.2rem auto 0;
-    padding: 0 max(1rem, 3vw);
-    overflow: visible !important;
+    max-width: none; width: 100%; margin: 1.2rem 0 0;
+    padding: 0 clamp(1rem, 3vw, 2.5rem);
+    overflow: visible;
   }
   /* hide old bento grid on desktop — replaced by stepper */
   .pipeline.pipeline-vertical { display: none !important; }
@@ -326,10 +326,10 @@ input, select, textarea { font-family: inherit; font-size: inherit; }
   .pipeline-stepper {
     display: flex; justify-content: space-between; align-items: flex-start;
     gap: 0.5rem; position: relative;
-    padding: 0 0 1.65rem; max-width: 960px; margin: 0 auto;
+    padding: 0 0 1.65rem; max-width: none; width: 100%; margin: 0;
   }
   .stepper-line {
-    position: absolute; top: 18px; left: 5%; right: 5%; height: 2px;
+    position: absolute; top: 18px; left: 4%; right: 4%; height: 2px;
     background: var(--border); border-radius: 999px; z-index: 0;
   }
   .stepper-node {
@@ -539,6 +539,69 @@ details[open] .add-toggle { border-bottom: 1px solid var(--border); }
   font-family: var(--font-mono); font-size: 0.7rem; color: var(--text-2);
   margin-top: 0.3rem; font-style: italic;
 }
+
+/* ── Customer Switcher (searchable) ── */
+.customer-switcher {
+  max-width: 560px; margin: 1.2rem auto 0;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-card);
+  padding: 1rem 1.1rem; text-align: left;
+  box-shadow: var(--shadow-card);
+}
+.switcher-label {
+  display: block; font-size: 0.78rem; font-weight: 600; color: var(--text-2);
+  margin-bottom: 0.45rem;
+}
+.switcher-row {
+  display: flex; gap: 0.5rem; align-items: center;
+}
+.switcher-row input {
+  flex: 1; min-width: 0; padding: 0.65rem 0.9rem;
+  background: var(--bg-2); border: 1.5px solid var(--border); border-radius: var(--radius);
+  color: var(--text); font-size: 0.88rem; transition: border-color 0.2s, box-shadow 0.2s;
+}
+.switcher-row input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--gold-bg); }
+.switcher-hint {
+  font-size: 0.75rem; color: var(--text-2); margin-top: 0.5rem;
+}
+@media (max-width: 768px) {
+  .customer-switcher { margin: 1rem max(1rem, 3vw) 0; max-width: none; }
+}
+
+/* ── Guide Modal ── */
+.guide-overlay {
+  position: fixed; inset: 0; z-index: 210;
+  background: rgba(0,0,0,0.55); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 1rem;
+}
+.guide-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 20px;
+  padding: 1.5rem; max-width: 560px; width: 100%;
+  max-height: min(86vh, 720px); overflow: auto;
+  box-shadow: var(--shadow-modal);
+  text-align: left;
+}
+.guide-card h3 {
+  font-family: var(--font-display); font-size: 1.25rem; font-weight: 400; margin-bottom: 0.25rem;
+}
+.guide-sub { font-size: 0.82rem; color: var(--text-2); margin-bottom: 0.9rem; }
+.guide-steps {
+  margin: 0; padding-left: 1.25rem;
+  display: flex; flex-direction: column; gap: 0.65rem;
+  font-size: 0.88rem; line-height: 1.55; color: var(--text);
+}
+.guide-steps li strong { color: var(--accent); }
+.guide-steps code {
+  font-family: var(--font-mono); font-size: 0.78rem;
+  background: var(--bg-2); border: 1px solid var(--border);
+  padding: 0.1rem 0.35rem; border-radius: 6px;
+}
+.guide-tip {
+  margin-top: 1rem; padding: 0.7rem 0.9rem;
+  background: var(--gold-bg); border: 1px solid rgba(212,168,67,0.18); border-radius: var(--radius);
+  font-size: 0.82rem; color: var(--text-2); line-height: 1.5;
+}
+.guide-actions { display: flex; justify-content: flex-end; margin-top: 1.1rem; }
 
 /* ── Mobile polish ── */
 @media (max-width: 520px) {

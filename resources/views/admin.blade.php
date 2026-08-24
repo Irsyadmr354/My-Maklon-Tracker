@@ -18,6 +18,7 @@
     </div>
     <div class="topbar-actions">
       <span class="chip">{{ auth()->user()->no_hp }}</span>
+      <button class="btn-ghost btn-sm" id="btnGuide" onclick="openGuide()">Panduan</button>
       <button class="btn-theme" id="themeToggle" type="button" aria-label="Toggle theme">
         <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
         <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
@@ -43,6 +44,17 @@
       <div class="hero-progress" aria-label="Progress pesanan">
         <div class="progress-bar"><div class="progress-fill" style="width: {{ $percent }}%"></div></div>
         <p class="progress-text"><span class="progress-pill">{{ $doneCount }} dari 8 tahap selesai</span></p>
+      </div>
+      <div class="customer-switcher">
+        <label for="customerSearch" class="switcher-label">Pindah Customer — ketik No HP / Email untuk cari</label>
+        <div class="switcher-row">
+          <input id="customerSearch" type="text" placeholder="Cari No HP atau Email..." autocomplete="off" list="customerList" />
+          <datalist id="customerList">
+            @foreach($customers as $c)<option value="{{ $c->no_hp }} — {{ $c->email }}" data-id="{{ $c->id }}">@endforeach
+          </datalist>
+          <button type="button" class="btn-ghost btn-sm" onclick="goCustomer()">Buka</button>
+        </div>
+        <p class="switcher-hint">Sedang melihat: <strong>{{ $user->no_hp }}</strong> — {{ $user->email }}</p>
       </div>
     </section>
 
@@ -391,9 +403,73 @@
       if (e.key === 'Enter') { e.preventDefault(); confirmUploader(); }
       if (e.key === 'Escape') cancelUploader();
     });
+
+    // Guide modal
+    function openGuide() {
+      const m = document.getElementById('guideModal');
+      if (m) { m.style.display = 'flex'; document.body.style.overflow = 'hidden'; }
+    }
+    function closeGuide() {
+      const m = document.getElementById('guideModal');
+      if (m) { m.style.display = 'none'; document.body.style.overflow = ''; }
+    }
+    document.addEventListener('keydown', function(e) { if (e.key === 'Escape') { const gm = document.getElementById('guideModal'); if (gm && gm.style.display !== 'none') closeGuide(); } });
+    document.addEventListener('DOMContentLoaded', function() {
+      const gm = document.getElementById('guideModal');
+      if (gm) gm.addEventListener('click', function(e) { if (e.target === gm) closeGuide(); });
+    });
+
+    // Customer switcher
+    function goCustomer() {
+      const input = document.getElementById('customerSearch');
+      const val = (input && input.value ? input.value.trim() : '');
+      if (!val) { alert('Ketik No HP atau Email customer dulu.'); return; }
+      const dl = document.getElementById('customerList');
+      let id = null;
+      if (dl) {
+        for (const opt of dl.options) {
+          if (opt.value === val) { id = opt.getAttribute('data-id'); break; }
+        }
+        if (!id) {
+          const needle = val.split(' — ')[0].trim();
+          for (const opt of dl.options) {
+            const optNoHp = opt.value.split(' — ')[0].trim();
+            if (opt.value.includes(needle) || optNoHp === needle) { id = opt.getAttribute('data-id'); break; }
+          }
+        }
+      }
+      if (!id && val.includes(' — ')) {
+        const nohp = val.split(' — ')[0].trim();
+        if (dl) for (const opt of dl.options) {
+          if (opt.value.startsWith(nohp + ' —')) { id = opt.getAttribute('data-id'); break; }
+        }
+      }
+      if (id) location.href = '/admin/customers/' + id;
+      else alert('Customer tidak ditemukan. Pilih dari daftar.');
+    }
+    document.addEventListener('DOMContentLoaded', function() {
+      const ci = document.getElementById('customerSearch');
+      if (ci) ci.addEventListener('keydown', function(e) { if (e.key === 'Enter') { e.preventDefault(); goCustomer(); } });
+    });
   </script>
 
   <div id="editBackdrop" class="edit-backdrop" style="display:none" onclick="closeAllEditPanels()"></div>
+
+<div id="guideModal" class="guide-overlay" style="display:none" role="dialog" aria-modal="true">
+  <div class="guide-card">
+    <h3>Panduan Admin — Madu Wild Bee</h3>
+    <p class="guide-sub">Untuk staf non-IT. Ikuti langkah 1→5.</p>
+    <ol class="guide-steps">
+      <li><strong>Login</strong> — buka <code>/login</code>, masuk pakai <em>No HP</em> + <em>Kata Sandi</em> admin (No HP = ADMIN_PHONE di .env). Jika baru, pakai No HP admin untuk aktivasi pertama.</li>
+      <li><strong>Lihat Daftar Customer</strong> — klik <em>Kelola Customer</em> di bawah (atau buka <code>/admin/customers</code>). Di sana: <em>Tambah Customer baru</em> (isi Email, No HP login customer, Kata Sandi) → <em>Tambah</em>. Cari customer via kolom search.</li>
+      <li><strong>Buka Tracker Customer</strong> — klik <em>Progres</em> pada card customer (atau pakai switcher searchable di bawah judul Kelola Pesanan). Anda akan di <code>/admin/customers/{id}</code>.</li>
+      <li><strong>Edit Progress</strong> — di pipeline 8 tahap (Konsultasi→Kesimpulan), klik node tahap → panel detail muncul di bawah. Ubah <em>Status</em> (Selesai/Dikerjakan/Ditunda), <em>Tanggung Jawab</em>, <em>Tanggal</em>, upload <em>Bukti</em> (jpg/png/pdf) jika Selesai. Step 7 (Foto Video) auto reminder WhatsApp. Klik <em>Simpan Semua</em> di pill bawah.</li>
+      <li><strong>Selesai</strong> — customer login pakai <em>No HP-nya</em> di <code>/order-tracker</code> hanya bisa lihat (read-only). Jika perlu ganti No HP/Password customer: di <code>/admin/customers</code> klik <em>Kelola</em> pada card → ubah No HP/Password → Simpan.</li>
+    </ol>
+    <p class="guide-tip">Tips: Field di bawah “Kelola Pesanan” bisa diketik untuk cari & pindah customer tanpa kembali ke daftar.</p>
+    <div class="guide-actions"><button class="btn-primary" onclick="closeGuide()">Mengerti</button></div>
+  </div>
+</div>
 
   <!-- Uploader Name Modal -->
   <div id="uploaderModal" class="uploader-overlay" style="display:none">

@@ -181,11 +181,13 @@ class UserController extends Controller
     {
         $progress  = Progress::firstOrCreate(['user_id' => $target->id]);
         $buktiList = Bukti::where('user_id', $target->id)->get()->keyBy('step');
+        $customers = User::orderBy('no_hp')->get();
 
         return view('admin', [
             'user'      => $target,
             'progress'  => $progress,
             'buktiList' => $buktiList,
+            'customers' => $customers,
         ]);
     }
 
