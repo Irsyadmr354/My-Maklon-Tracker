@@ -1,4 +1,4 @@
-/* TrackMaklon — admin.css v3 — premium dossier bento */
+/* TrackMaklon — admin.css v3.1 — Gambar1 4-col pill + Gambar2 unified width */
 
  /* ── Theme Tokens ── */
 :root {
@@ -394,6 +394,7 @@ input, select, textarea { font-family: inherit; font-size: inherit; }
     box-shadow: 0 10px 36px rgba(0,0,0,0.38), 0 1px 3px rgba(0,0,0,0.2);
     width: auto; max-width: min(92vw, 580px);
     white-space: normal;
+    overflow: visible;
   }
   .action-bar .btn-ghost,
   .action-bar .btn-primary {
@@ -402,8 +403,11 @@ input, select, textarea { font-family: inherit; font-size: inherit; }
     font-size: 0.82rem;
     line-height: 1;
     white-space: nowrap;
+    flex: 0 1 auto;
+    min-width: auto;
   }
   .action-bar .btn-primary { padding: 0.5rem 1.15rem; font-weight: 700; }
+  .action-bar form { flex: 0 1 auto; min-width: auto; }
   [data-theme="light"] .action-bar {
     background: rgba(255,255,255,0.92);
     border-color: rgba(0,0,0,0.08);
@@ -445,20 +449,28 @@ input, select, textarea { font-family: inherit; font-size: inherit; }
   .node-active::after { width: calc(50% - 18px - 0.325rem); }
 }
 
-/* ── Action Bar ── — Gambar1 Rapikan base (mobile full-width, desktop pill below overrides) */
+/* ── Action Bar ── — Gambar1: mobile 4-col single row, gunakan gap kanan (nowrap + flex:1) */
 .action-bar {
   position: fixed; left: 0; right: 0; bottom: 0; z-index: 60;
-  display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 0.4rem;
-  padding: 0.6rem max(1rem, 3vw) calc(0.6rem + env(safe-area-inset-bottom));
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: nowrap; gap: 0.30rem;
+  padding: 0.5rem 0.5rem calc(0.5rem + env(safe-area-inset-bottom));
   background: var(--bg-2); border-top: 1px solid var(--border);
+  overflow: hidden;
 }
 .action-bar .btn-ghost,
 .action-bar .btn-primary {
-  min-height: 38px;
-  font-size: 0.82rem;
+  min-height: 36px;
+  font-size: 0.72rem;
   line-height: 1;
   white-space: nowrap;
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 0.42rem 0.55rem;
+  justify-content: center;
+  text-align: center;
 }
+.action-bar form { display: flex; flex: 1 1 0; min-width: 0; }
+.action-bar form .btn-ghost { flex: 1 1 0; width: 100%; }
 @media (min-width: 769px) {
   .action-bar {
     left: 50%; right: auto; bottom: max(1rem, env(safe-area-inset-bottom));
@@ -474,7 +486,15 @@ input, select, textarea { font-family: inherit; font-size: inherit; }
     width: auto; max-width: min(92vw, 580px);
     white-space: normal;
     border-top: 1px solid rgba(255,255,255,0.1);
+    overflow: visible;
   }
+  .action-bar .btn-ghost,
+  .action-bar .btn-primary {
+    flex: 0 1 auto;
+    min-width: auto;
+  }
+  .action-bar form { flex: 0 1 auto; min-width: auto; }
+  .action-bar form .btn-ghost { flex: 0 1 auto; width: auto; }
   [data-theme="light"] .action-bar {
     background: rgba(255,255,255,0.92);
     border-color: rgba(0,0,0,0.08);
@@ -661,6 +681,23 @@ details[open] .add-toggle { border-bottom: 1px solid var(--border); }
   .customer-switcher-wrap { padding: 0 max(1rem, 3vw) 0 52px; }
 }
 
+/* ── Gambar2: samakan lebar Pindah Customer dengan pipeline/tracker — pastikan outer constraints identik di desktop */
+@media (min-width: 769px) {
+  .customer-switcher-wrap,
+  .pipeline-scroll,
+  .detail-stack {
+    max-width: none;
+    width: 100%;
+    box-sizing: border-box;
+    padding-left: clamp(1rem, 3vw, 2.5rem);
+    padding-right: clamp(1rem, 3vw, 2.5rem);
+  }
+  .customer-switcher-wrap { margin: 1.2rem 0 0; padding-top: 0; padding-bottom: 0; }
+  .pipeline-scroll { margin: 1.2rem 0 0; padding-top: 0; padding-bottom: 0; }
+  .detail-stack { margin: 1rem 0 6rem; padding-top: 0; padding-bottom: 1rem; }
+  .customer-switcher { max-width: none; width: 100%; margin: 0; }
+}
+
 /* ── Guide Modal — premium readable ── */
 .guide-overlay {
   position: fixed; inset: 0; z-index: 210;
@@ -753,9 +790,9 @@ details[open] .add-toggle { border-bottom: 1px solid var(--border); }
   .status-btn { min-height: 48px; }
   .pipeline-step { padding: 1.1rem; }
   .admin-main { padding-bottom: 7.5rem; }
-  .action-bar { gap: 0.35rem; padding: 0.45rem 0.65rem; max-width: 94vw; }
+  .action-bar { gap: 0.28rem; padding: 0.4rem 0.5rem calc(0.4rem + env(safe-area-inset-bottom)); max-width: none; left: 0; right: 0; transform: none; border-radius: 0; flex-wrap: nowrap; }
   .action-bar .btn-ghost,
-  .action-bar .btn-primary { padding: 0.45rem 0.85rem; font-size: 0.74rem; min-height: 34px; }
+  .action-bar .btn-primary { padding: 0.38rem 0.45rem; font-size: 0.68rem; min-height: 32px; letter-spacing: -0.01em; }
   .customer-card { flex-wrap: wrap; }
   .add-form { grid-template-columns: 1fr; }
   .page-header { padding: 1.5rem 0.75rem 0; }
