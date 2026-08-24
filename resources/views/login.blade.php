@@ -42,12 +42,12 @@
       <form method="POST" action="{{ route('login') }}" id="loginForm">
         @csrf
         <div class="field">
-          <label for="email">Email</label>
-          <input type="email" id="email" name="email" value="{{ old('email') }}" placeholder="nama@email.com" required autocomplete="email">
+          <label for="no_hp">Nomor HP</label>
+          <input type="tel" id="no_hp" name="no_hp" value="{{ old('no_hp') }}" placeholder="08xxxxxxxxxx" required maxlength="20" inputmode="numeric" autocomplete="username">
         </div>
         <div class="field">
           <label for="password">Kata Sandi</label>
-          <input type="password" id="password" name="password" placeholder="Masukkan kata sandi" required minlength="8" autocomplete="current-password">
+          <input type="password" id="password" name="password" placeholder="{{ old('no_hp') ? 'Masukkan kata sandi' : 'Masukkan kata sandi (aktivasi pertama)' }}" required minlength="8" autocomplete="current-password">
         </div>
         <button type="submit" class="btn-primary btn-full" id="submitBtn">Masuk</button>
       </form>

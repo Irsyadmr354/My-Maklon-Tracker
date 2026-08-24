@@ -15,7 +15,7 @@
       <span class="brand-name">Madu Wild Bee</span>
     </div>
     <div class="topbar-actions">
-      <span class="chip">{{ auth()->user()->email }}</span>
+      <span class="chip">{{ auth()->user()->no_hp }}</span>
       <button class="btn-theme" id="themeToggle" type="button" aria-label="Toggle theme">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
       </button>
@@ -79,11 +79,11 @@
           }
           $percent = intdiv($done * 100, 8);
         @endphp
-        <div class="customer-card">
+        <div class="customer-card" data-card="{{ $c->id }}">
           <div class="customer-info">
-            <div class="customer-email">{{ $c->email }}</div>
+            <div class="customer-phone">{{ $c->no_hp }}</div>
             <div class="customer-meta">
-              {{ $c->no_hp }}
+              {{ $c->email }}
               <span class="badge {{ $c->role === 'admin' ? 'badge-done' : 'badge-hold' }}">
                 {{ ucfirst($c->role) }}
               </span>
@@ -93,7 +93,28 @@
             <div class="mini-bar"><div class="mini-fill" style="width:{{ $percent }}%"></div></div>
             <span class="mini-label">{{ $done }}/8</span>
           </div>
-          <a class="btn-manage" href="{{ route('customers.show', $c->id) }}">Kelola</a>
+          <div class="customer-actions">
+            <a class="btn-ghost btn-sm" href="{{ route('customers.show', $c->id) }}">Progres</a>
+            <button type="button" class="btn-manage" onclick="toggleKelola({{ $c->id }})">Kelola</button>
+          </div>
+        </div>
+        <div class="kelola-panel" id="kelola-{{ $c->id }}">
+          <form method="POST" action="{{ route('customers.akun', $c->id) }}" class="kelola-form">
+            @csrf
+            <div class="field">
+              <label for="kelola-no_hp-{{ $c->id }}">No HP (login customer)</label>
+              <input id="kelola-no_hp-{{ $c->id }}" type="text" name="no_hp" value="{{ $c->no_hp }}"
+                     maxlength="20" inputmode="numeric" required />
+            </div>
+            <div class="field">
+              <label for="kelola-password-{{ $c->id }}">Kata Sandi Baru</label>
+              <input id="kelola-password-{{ $c->id }}" type="password" name="password"
+                     minlength="8" placeholder="Kosongkan jika tidak diubah" autocomplete="new-password" />
+            </div>
+            <div class="field" style="align-self:end;">
+              <button type="submit" class="btn-primary" style="width:100%;">Simpan</button>
+            </div>
+          </form>
         </div>
       @empty
         <div class="empty-state">
@@ -119,6 +140,18 @@
         localStorage.setItem('theme', next);
       });
     })();
+
+    function toggleKelola(id) {
+      const panel = document.getElementById('kelola-' + id);
+      const open = panel.classList.toggle('open');
+      document.querySelectorAll('.kelola-panel.open').forEach(function(p) {
+        if (p !== panel) p.classList.remove('open');
+      });
+      if (open) {
+        const first = panel.querySelector('input[name=no_hp]');
+        if (first) first.focus();
+      }
+    }
   </script>
 </body>
 </html>

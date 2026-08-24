@@ -38,7 +38,7 @@ class CustomerManagementTest extends TestCase
         $response = $this->actingAs($admin)->get('/admin/customers/' . $customer->id);
 
         $response->assertStatus(200);
-        $response->assertSee($customer->email, false);
+        $response->assertSee($customer->no_hp, false);
     }
 
     public function test_admin_mengubah_progres_customer(): void
@@ -100,7 +100,7 @@ class CustomerManagementTest extends TestCase
         $this->post('/logout');
 
         $response = $this->post('/login', [
-            'email' => 'customer-baru@example.com',
+            'no_hp' => '081234567891',
             'password' => 'rahasia123',
         ]);
 

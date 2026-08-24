@@ -109,6 +109,7 @@ input, select, textarea { font-family: inherit; font-size: inherit; }
   max-width: 680px; margin: 0 auto;
   padding: 2.5rem max(1rem, 3vw) 1.5rem;
 }
+.tracker-main { padding-bottom: 6rem; }
 .eyebrow {
   font-family: var(--font-mono);
   font-size: 0.65rem; font-weight: 700;
@@ -219,27 +220,25 @@ h1 {
 /* --- Pipeline horizontal (desktop) --- */
 @media (min-width: 769px) {
   .pipeline {
-    display: flex; gap: 0; max-width: 960px;
-    padding: 0 2rem 3rem; justify-content: center;
+    display: flex; max-width: 1000px; margin: 0 auto;
+    padding: 0 max(1.5rem, 3vw) 3rem;
   }
   .pipeline-step {
     flex: 1; display: flex; flex-direction: column; align-items: center;
-    padding: 2.5rem 0.5rem 0; text-align: center; position: relative;
+    padding: 0 0.5rem; text-align: center; position: relative;
   }
   .pipeline-step::before {
-    left: calc(50% + 20px); right: calc(-50% + 20px);
+    left: calc(50% + 22px); right: calc(-50% + 22px);
     top: 15px; bottom: auto; width: auto; height: 2px;
   }
   .pipeline-step:last-child::before { display: none; }
-  .pipeline-dot {
-    position: relative; left: auto; top: auto;
-    width: 32px; height: 32px; margin-bottom: 0.6rem;
-  }
-  .pipeline-content { display: flex; flex-direction: column; align-items: center; }
+  .pipeline-dot { position: relative; left: auto; top: auto; margin-bottom: 0.6rem; }
+  .pipeline-content { display: flex; flex-direction: column; align-items: center; width: 100%; flex: 1; }
   .pipeline-header { justify-content: center; }
   .pipeline-header h3 { font-size: 0.9rem; }
   .pipeline-date, .pipeline-assigned { text-align: center; }
   .btn-proof { margin-top: 0.4rem; }
+  .uploaded-by { margin-top: 0.15rem; }
 }
 
 /* --- Badges --- */
@@ -272,6 +271,15 @@ h1 {
   display: block; font-family: var(--font-mono); font-size: 0.68rem;
   color: var(--text-2); margin-top: 0.25rem; font-style: italic;
 }
+
+/* --- Action Bar --- */
+.action-bar {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 60;
+  display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+  padding: 0.6rem max(1rem, 3vw) calc(0.6rem + env(safe-area-inset-bottom));
+  background: var(--bg-2); border-top: 1px solid var(--border);
+}
+.action-bar form { display: flex; }
 
 /* --- Empty State --- */
 .empty-card {
@@ -350,6 +358,8 @@ h1 {
   .pipeline-dot { position: absolute; left: 0; top: 1rem; }
   .pipeline-content { flex: 1; }
   .pipeline-header { justify-content: flex-start; }
+  .action-bar { padding: 0.5rem 0.75rem calc(0.5rem + env(safe-area-inset-bottom)); }
+  .action-bar .btn-ghost { padding: 0.4rem 0.9rem; font-size: 0.75rem; min-height: 32px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

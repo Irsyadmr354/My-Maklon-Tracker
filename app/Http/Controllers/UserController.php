@@ -33,41 +33,30 @@ class UserController extends Controller
     public function logika_masuk(Request $request)
     {
         $request->validate([
-            'email'    => 'required|email|max:255',
+            'no_hp'    => 'required|string|max:20',
             'password' => 'required|string|min:8',
-            'no_hp'    => 'nullable|string|max:20',
         ]);
 
         $pesanLoginGagal = fn () => ValidationException::withMessages([
-            'login' => 'Email atau kata sandi salah.',
+            'login' => 'Nomor HP atau kata sandi salah.',
         ]);
 
-        $user = User::where('email', $request->input('email'))->first();
+        $user = User::where('no_hp', $request->input('no_hp'))->first();
 
         if (! $user) {
             throw $pesanLoginGagal();
         }
 
-        $adminPhone = config('maklon.admin_phone');
-        $cocokAdmin = false;
-
-        if ($adminPhone === null || $adminPhone === '') {
-            Log::warning('ADMIN_PHONE kosong/tidak diatur: tidak ada admin yang diakui pada percobaan login ini.');
-        } elseif ($request->filled('no_hp')) {
-            $cocokAdmin = hash_equals((string) $adminPhone, (string) $request->input('no_hp'));
-        }
+        $adminPhone   = config('maklon.admin_phone');
+        $isAdminPhone = ($adminPhone !== null && $adminPhone !== '')
+            && hash_equals((string) $adminPhone, (string) $user->no_hp);
 
         if ($user->password === null) {
-            if (! $request->filled('no_hp')
-                || ! hash_equals((string) $user->no_hp, (string) $request->input('no_hp'))) {
-                throw $pesanLoginGagal();
-            }
-
             $user->password = Hash::make($request->input('password'));
-            $user->role     = $cocokAdmin ? 'admin' : 'user';
+            $user->role     = $isAdminPhone ? 'admin' : 'user';
         } elseif (! Hash::check($request->input('password'), $user->password)) {
             throw $pesanLoginGagal();
-        } elseif ($cocokAdmin && $user->role !== 'admin') {
+        } elseif ($isAdminPhone && $user->role !== 'admin') {
             $user->role = 'admin';
         }
 
@@ -83,6 +72,39 @@ class UserController extends Controller
         }
 
         return redirect()->route('tracker.index');
+    }
+
+    public function updateAkun(Request $request, User $target)
+    {
+        $data = $request->validate([
+            'no_hp'    => 'required|string|max:20|unique:users,no_hp,' . $target->id,
+            'password' => 'nullable|string|min:8',
+        ]);
+
+        $adminPhone = config('maklon.admin_phone');
+        $nomorAdmin = $adminPhone !== null && $adminPhone !== ''
+            && hash_equals((string) $adminPhone, (string) $target->no_hp);
+
+        if ($nomorAdmin) {
+            return back()->withErrors([
+                'no_hp' => 'Nomor admin tidak boleh diubah dari sini.',
+            ])->withInput();
+        }
+
+        if ($adminPhone !== null && $adminPhone !== ''
+            && hash_equals((string) $adminPhone, (string) $data['no_hp'])) {
+            return back()->withErrors([
+                'no_hp' => 'Nomor ini digunakan untuk akun admin. Gunakan nomor lain.',
+            ])->withInput();
+        }
+
+        $target->no_hp = $data['no_hp'];
+        if (! empty($data['password'])) {
+            $target->password = Hash::make($data['password']);
+        }
+        $target->save();
+
+        return back()->with('success', 'Data akun customer diperbarui.');
     }
 
     public function tambahCustomer(Request $request)

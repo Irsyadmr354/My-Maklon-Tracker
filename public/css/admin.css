@@ -166,6 +166,41 @@ input, select, textarea { font-family: inherit; font-size: inherit; }
   border-radius: 999px; margin-top: 0.3rem; font-weight: 600;
 }
 
+/* ── Pipeline horizontal (desktop) ── */
+@media (min-width: 769px) {
+  .pipeline {
+    display: flex; gap: 0.75rem; max-width: 1200px;
+    margin: 1.5rem auto 0; padding: 0 max(1rem, 3vw) 14rem;
+  }
+  .pipeline::before { display: none; }
+  .pipeline-step {
+    flex: 1; display: flex; flex-direction: column;
+    margin-bottom: 0; padding: 1rem 0.75rem 1.25rem;
+  }
+  .pipeline-step::after {
+    content: ''; position: absolute;
+    top: 33px; left: 50%; right: calc(-50% - 0.75rem);
+    height: 2px; background: var(--border); z-index: -1;
+  }
+  .pipeline-step:last-child::after { display: none; }
+  .step-done::after { background: var(--green); }
+  .step-active::after { background: #D97706; }
+  .pipeline-dot { position: static; margin: 0 auto 0.75rem; }
+  .pipeline-content { display: flex; flex-direction: column; align-items: center; flex: 1; }
+  .pipeline-header { justify-content: center; }
+  .pipeline-header h3 { font-size: 0.85rem; text-align: center; }
+  .pipeline-date { text-align: center; }
+  .btn-expand { align-self: center; }
+  .pipeline-step .edit-panel.open {
+    position: absolute; top: calc(100% + 8px); left: 0; right: 0;
+    max-height: none; opacity: 1; margin-top: 0;
+    background: var(--bg-2); border: 1.5px solid var(--accent);
+    border-radius: var(--radius); padding: 1rem; z-index: 80;
+    box-shadow: var(--shadow);
+  }
+  .pipeline-step.expanded { z-index: 90; }
+}
+
 /* ── Badge ── */
 .badge {
   font-family: var(--font-mono); font-size: 0.6rem; font-weight: 700;
@@ -279,10 +314,7 @@ input, select, textarea { font-family: inherit; font-size: inherit; }
 }
 .customer-card:hover { border-color: var(--accent); }
 .customer-info { flex: 1; min-width: 0; }
-.customer-email {
-  font-weight: 600; font-size: 0.92rem; overflow: hidden;
-  text-overflow: ellipsis; white-space: nowrap;
-}
+.customer-phone { font-weight: 600; font-size: 0.92rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .customer-meta { font-size: 0.78rem; color: var(--text-2); margin-top: 0.15rem; }
 .customer-progress { display: flex; align-items: center; gap: 0.4rem; flex-shrink: 0; }
 .mini-bar {
@@ -297,6 +329,11 @@ input, select, textarea { font-family: inherit; font-size: inherit; }
   min-height: 36px; display: inline-flex; align-items: center; transition: filter 0.15s;
 }
 .btn-manage:hover { filter: brightness(1.1); }
+.customer-actions { display: flex; gap: 0.4rem; align-items: center; flex-shrink: 0; }
+.kelola-panel { display: none; background: var(--surface); border: 1px solid var(--accent); border-radius: var(--radius); padding: 1rem; margin-bottom: 0.75rem; }
+.kelola-panel.open { display: block; }
+.kelola-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.75rem; }
+.action-bar form { display: flex; }
 
 /* ── Add Customer Form ── */
 .add-section {
@@ -394,4 +431,6 @@ details[open] .add-toggle { border-bottom: 1px solid var(--border); }
   .add-form { grid-template-columns: 1fr; }
   .page-header { padding: 1.5rem 0.75rem 0; }
   .page-header h1 { font-size: 1.3rem; }
+  .customer-actions { width: 100%; justify-content: flex-end; }
+  .kelola-form { grid-template-columns: 1fr; }
 }

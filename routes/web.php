@@ -17,6 +17,8 @@ Route::middleware(['auth', 'IsAdmin'])->group(function () {
          ->name('customers.index');
     Route::get('/admin/customers/{target}', [UserController::class, 'customerShow'])
          ->name('customers.show');
+    Route::post('/admin/customers/{target}/akun', [UserController::class, 'updateAkun'])
+         ->name('customers.akun');
     Route::post('/admin/customers', [UserController::class, 'tambahCustomer'])
          ->name('customers.store');
     Route::post('/progress/update', [UserController::class, 'updateProgress'])

@@ -17,18 +17,11 @@
       <span class="brand-tag">Admin</span>
     </div>
     <div class="topbar-actions">
-      @if($user->id !== auth()->id())
-        <a class="breadcrumb" href="{{ route('customers.index') }}">&larr; Customer</a>
-      @endif
-      <span class="chip">{{ $user->email }}</span>
+      <span class="chip">{{ auth()->user()->no_hp }}</span>
       <button class="btn-theme" id="themeToggle" type="button" aria-label="Toggle theme">
         <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
         <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
       </button>
-      <form method="POST" action="{{ route('logout') }}">
-        @csrf
-        <button class="btn-ghost btn-sm" type="submit">Keluar</button>
-      </form>
     </div>
   </header>
 
@@ -42,7 +35,7 @@
   <main class="admin-main">
     <section class="page-header">
       <h1>Kelola Pesanan</h1>
-      <p class="page-sub">{{ $user->email }}</p>
+      <p class="page-sub">{{ $user->no_hp }}</p>
     </section>
 
     <form action="{{ route('progress.update') }}" method="POST" enctype="multipart/form-data" id="adminForm">
@@ -50,7 +43,7 @@
       <input type="hidden" name="user_id" value="{{ $user->id }}">
 
       @php
-        $isAdmin = ($user->role === 'admin');
+        $isAdmin = (auth()->user()->role === 'admin');
         $stages = [
           'konsultasi'     => 'gambar1.png',
           'pembayaran'     => 'gambar4.png',
@@ -178,16 +171,31 @@
           </div>
         @endforeach
       </div>
+    </form>
 
       @if($isAdmin)
         <div class="action-bar">
-          <a href="{{ route('customers.index') }}" class="btn-ghost">Kelola Customer</a>
-          <button type="submit" class="btn-primary" id="saveBtn">Simpan Semua</button>
+          @if($user->id !== auth()->id())
+            <a href="{{ route('customers.index') }}" class="btn-ghost">&larr; Customer</a>
+          @else
+            <a href="{{ route('customers.index') }}" class="btn-ghost">Kelola Customer</a>
+          @endif
+          <button type="submit" form="adminForm" class="btn-primary" id="saveBtn">Simpan Semua</button>
+          <form method="POST" action="{{ route('logout') }}">
+            @csrf
+            <button type="submit" class="btn-ghost">Keluar</button>
+          </form>
         </div>
       @else
         <div class="alert alert-error" style="max-width:680px;margin:1rem auto;">Anda tidak memiliki akses untuk mengedit data.</div>
+        <div class="action-bar">
+          <a href="{{ route('customers.index') }}" class="btn-ghost">&larr; Customer</a>
+          <form method="POST" action="{{ route('logout') }}">
+            @csrf
+            <button type="submit" class="btn-ghost">Keluar</button>
+          </form>
+        </div>
       @endif
-    </form>
   </main>
 
   <script>
@@ -246,7 +254,9 @@
     function toggleStep(step) {
       const panel = document.getElementById('panel-' + step);
       const text = document.getElementById('expand-text-' + step);
+      const stepEl = panel.closest('.pipeline-step');
       const isOpen = panel.classList.toggle('open');
+      stepEl.classList.toggle('expanded', isOpen);
       text.textContent = isOpen ? 'Tutup' : 'Edit';
     }
 

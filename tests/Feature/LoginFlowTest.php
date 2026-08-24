@@ -12,7 +12,7 @@ class LoginFlowTest extends TestCase
 {
     use RefreshDatabase;
 
-    private const PESAN_GENERIK = 'Email atau kata sandi salah.';
+    private const PESAN_GENERIK = 'Nomor HP atau kata sandi salah.';
 
     protected function setUp(): void
     {
@@ -24,12 +24,12 @@ class LoginFlowTest extends TestCase
     public function test_login_sukses_dengan_password_redirect_ke_tracker(): void
     {
         $user = User::factory()->create([
-            'email' => 'customer@example.com',
+            'no_hp' => '081110001111',
             'password' => Hash::make('sandra8Kuat'),
         ]);
 
         $response = $this->post('/login', [
-            'email' => 'customer@example.com',
+            'no_hp' => '081110001111',
             'password' => 'sandra8Kuat',
         ]);
 
@@ -40,113 +40,106 @@ class LoginFlowTest extends TestCase
     public function test_password_salah_pesan_generik_dan_tidak_authenticated(): void
     {
         User::factory()->create([
-            'email' => 'customer@example.com',
+            'no_hp' => '081110001111',
             'password' => Hash::make('sandra8Kuat'),
         ]);
 
         $response = $this->from(route('login.form'))->post('/login', [
-            'email' => 'customer@example.com',
-            'password' => 'bukanSandi9',
+            'no_hp' => '081110001111',
+            'password' => 'salahPass8',
         ]);
 
         $response->assertSessionHasErrors(['login' => self::PESAN_GENERIK]);
         $this->assertGuest();
     }
 
-    public function test_email_tak_terdaftar_pesan_identik_dengan_kasus_password_salah(): void
+    public function test_no_hp_tak_terdaftar_pesan_identik_dengan_kasus_password_salah(): void
     {
         $response = $this->from(route('login.form'))->post('/login', [
-            'email' => 'tidak-ada@example.com',
-            'password' => 'sandiapapun8',
+            'no_hp' => '080000000001',
+            'password' => 'sandiApapun8',
         ]);
 
         $response->assertSessionHasErrors(['login' => self::PESAN_GENERIK]);
         $this->assertGuest();
         $this->assertDatabaseMissing('users', [
-            'email' => 'tidak-ada@example.com',
+            'no_hp' => '080000000001',
         ]);
     }
 
-    public function test_aktivasi_pertama_no_hp_cocok_set_password_db(): void
+    public function test_aktivasi_pertama_set_password_db(): void
     {
         User::factory()->tanpaPassword()->create([
-            'email' => 'lama@example.com',
             'no_hp' => '081234567890',
         ]);
 
         $response = $this->post('/login', [
-            'email' => 'lama@example.com',
-            'password' => 'aktivasi8Ok',
             'no_hp' => '081234567890',
+            'password' => 'aktivasi8Ok',
         ]);
 
         $response->assertRedirect(route('tracker.index'));
         $this->assertAuthenticated();
 
-        $fresh = User::where('email', 'lama@example.com')->firstOrFail();
+        $fresh = User::where('no_hp', '081234567890')->firstOrFail();
         $this->assertNotNull($fresh->password);
         $this->assertTrue(Hash::check('aktivasi8Ok', $fresh->password));
     }
 
-    public function test_aktivasi_no_hp_salah_gagal_generik_dan_password_tetap_null(): void
+    public function test_aktivasi_nomor_admin_mendapat_role_admin(): void
     {
         User::factory()->tanpaPassword()->create([
-            'email' => 'lama@example.com',
-            'no_hp' => '081234567890',
-        ]);
-
-        $response = $this->from(route('login.form'))->post('/login', [
-            'email' => 'lama@example.com',
-            'password' => 'aktivasi8Ok',
             'no_hp' => '089999999999',
         ]);
 
-        $response->assertSessionHasErrors(['login' => self::PESAN_GENERIK]);
-        $this->assertGuest();
+        $response = $this->post('/login', [
+            'no_hp' => '089999999999',
+            'password' => 'aktivasi8Ok',
+        ]);
 
-        $this->assertNull(User::where('email', 'lama@example.com')->firstOrFail()->password);
+        $response->assertRedirect(route('admin.index'));
+        $this->assertDatabaseHas('users', [
+            'no_hp' => '089999999999',
+            'role' => 'admin',
+        ]);
+
+        $fresh = User::where('no_hp', '089999999999')->firstOrFail();
+        $this->assertSame('admin', $fresh->role);
     }
 
-    public function test_nomor_admin_mendapat_role_admin(): void
+    public function test_nomor_admin_terdaftar_promosi_role_admin(): void
     {
-        config(['maklon.admin_phone' => '089999999999']);
-
-        $user = User::factory()->create([
-            'email' => 'calonadmin@example.com',
+        User::factory()->create([
+            'no_hp' => '089999999999',
+            'role' => 'user',
             'password' => Hash::make('sandra8Kuat'),
         ]);
 
         $response = $this->post('/login', [
-            'email' => 'calonadmin@example.com',
-            'password' => 'sandra8Kuat',
             'no_hp' => '089999999999',
+            'password' => 'sandra8Kuat',
         ]);
 
         $response->assertRedirect(route('admin.index'));
-
         $this->assertDatabaseHas('users', [
-            'id' => $user->id,
+            'no_hp' => '089999999999',
             'role' => 'admin',
         ]);
     }
 
     public function test_aktivasi_nomor_biasa_role_turun_user(): void
     {
-        config(['maklon.admin_phone' => '089999999999']);
-
         User::factory()->tanpaPassword()->admin()->create([
-            'email' => 'admlama@example.com',
             'no_hp' => '081234567890',
         ]);
 
         $this->post('/login', [
-            'email' => 'admlama@example.com',
-            'password' => 'aktivasi8Ok',
             'no_hp' => '081234567890',
+            'password' => 'aktivasi8Ok',
         ]);
 
         $this->assertDatabaseHas('users', [
-            'email' => 'admlama@example.com',
+            'no_hp' => '081234567890',
             'role' => 'user',
         ]);
     }
