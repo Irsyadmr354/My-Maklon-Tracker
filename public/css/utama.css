@@ -242,7 +242,15 @@ h1 {
     top: 15px; bottom: auto; width: auto; height: 2px;
   }
   .pipeline-step:last-child::before { display: none; }
-  .pipeline-dot { position: relative; left: auto; top: auto; margin-bottom: 0.6rem; }
+  /* 50% pipeline colored — right half follows dot status */
+  .pipeline-step::after {
+    content: ''; position: absolute; top: 15px; left: 50%; width: 50%; height: 2px;
+    background: transparent; border-radius: 999px; z-index: 1;
+  }
+  .pipeline-step.step-done::after { background: var(--green); }
+  .pipeline-step.step-active::after { background: #D97706; }
+  .pipeline-step:last-child::after { display: none; }
+  .pipeline-dot { position: relative; left: auto; top: auto; margin-bottom: 0.6rem; z-index: 2; }
   .pipeline-content { display: flex; flex-direction: column; align-items: center; width: 100%; flex: 1; min-width: 0; }
   .pipeline-header { justify-content: center; }
   .pipeline-header h3 { font-size: 0.82rem; text-align: center; line-height: 1.2; max-width: 110px; overflow-wrap: anywhere; }
