@@ -538,8 +538,8 @@
 
   <div id="editBackdrop" class="edit-backdrop" style="display:none" onclick="closeAllEditPanels()"></div>
 
-<div id="guideModal" class="guide-overlay" style="display:none" role="dialog" aria-modal="true">
-  <div class="guide-card">
+<div id="guideModal" class="guide-overlay" style="display:none" role="dialog" aria-modal="true" onclick="if(event.target===this) closeGuide()">
+  <div class="guide-card" onclick="event.stopPropagation()">
     <button class="guide-close" type="button" onclick="closeGuide()" aria-label="Tutup panduan">✕</button>
     <div class="guide-head">
       <div class="guide-icon" aria-hidden="true">🐝</div>
@@ -562,6 +562,20 @@
     <div class="guide-actions"><button class="btn-primary" type="button" onclick="closeGuide()">Mengerti, tutup</button><span class="guide-hint">Tekan Esc atau klik luar untuk tutup</span></div>
   </div>
 </div>
+
+  <script>
+  // fallback ESC & klik luar — attach setelah elemen ada (inline fallback jika handler atas gagal cache)
+  (function(){
+    const gm=document.getElementById('guideModal');
+    if(gm) gm.addEventListener('click', function(e){ if(e.target===gm) closeGuide(); });
+    window.addEventListener('keydown', function(e){
+      if((e.key==='Escape'||e.key==='Esc')){
+        const m=document.getElementById('guideModal');
+        if(m && m.style.display==='flex'){ closeGuide(); e.stopPropagation(); }
+      }
+    });
+  })();
+  </script>
 
   <!-- Uploader Name Modal -->
   <div id="uploaderModal" class="uploader-overlay" style="display:none">
