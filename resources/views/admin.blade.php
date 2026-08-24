@@ -33,9 +33,17 @@
   @endif
 
   <main class="admin-main">
+    @php
+      $doneCount = $buktiList->filter(fn($b) => strtolower((string) ($b->status ?? '')) === 'done')->count();
+      $percent = intdiv($doneCount * 100, 8);
+    @endphp
     <section class="page-header">
       <h1>Kelola Pesanan</h1>
       <p class="page-sub">{{ $user->no_hp }}</p>
+      <div class="hero-progress" aria-label="Progress pesanan">
+        <div class="progress-bar"><div class="progress-fill" style="width: {{ $percent }}%"></div></div>
+        <p class="progress-text"><span class="progress-pill">{{ $doneCount }} dari 8 tahap selesai</span></p>
+      </div>
     </section>
 
     <form action="{{ route('progress.update') }}" method="POST" enctype="multipart/form-data" id="adminForm">
