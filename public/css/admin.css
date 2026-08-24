@@ -293,72 +293,85 @@ input, select, textarea { font-family: inherit; font-size: inherit; }
 }
 .link-existing:hover { text-decoration: underline; }
 
-/* ── Pipeline desktop: centered bento 4x2 grid, NO SCROLL ── */
+/* ── Pipeline desktop: Centered Horizontal Stepper — no overflow, single row 8 nodes ── */
+.sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+.pipeline-stepper-wrap { width: 100%; }
+.detail-head { display:flex; align-items:center; justify-content:space-between; gap:0.75rem; margin-bottom:0.75rem; }
+.detail-kicker { font-family:var(--font-mono); font-size:0.66rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-2); }
+@keyframes panelIn { from { opacity:0; transform:translateY(6px);} to { opacity:1; transform:translateY(0);} }
+/* global detail-stack (both mobile & desktop) — stepper nodes control these panels */
+.detail-stack { max-width: 560px; margin: 1rem auto 0; }
+.detail-panel {
+  display: none;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+  padding: 1.25rem; text-align: left;
+  box-shadow: var(--shadow-card);
+}
+.detail-panel.open { display: block; animation: panelIn 0.2s ease; }
+.detail-panel.edit-panel { max-height: none; opacity: 1; overflow: visible; }
+.edit-backdrop { display: none !important; }
+
 @media (min-width: 769px) {
   html, body { overflow-x: visible; }
   .admin-main { overflow: visible; }
   .pipeline-scroll {
-    max-width: 980px; margin: 1.6rem auto 0;
+    max-width: 980px; margin: 1.2rem auto 0;
     padding: 0 max(1rem, 3vw);
-    overflow: visible !important; /* kill native scrollbar */
+    overflow: visible !important;
   }
-  .pipeline {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 1rem;
-    max-width: 980px; margin: 0 auto;
-    padding: 0;
-    justify-content: center;
-    overflow: visible;
-  }
-  .pipeline::before { display: none; }
-  .pipeline-step {
-    margin-bottom: 0;
-    padding: 1.25rem 1.1rem 1.15rem;
-    display: flex; flex-direction: column;
-    min-height: 190px;
-  }
-  .pipeline-step::after { display: none; } /* remove horizontal line connector */
-  .pipeline-dot {
-    position: static;
-    margin: 0 auto 0.85rem;
-    width: 36px; height: 36px; flex-shrink: 0;
-  }
-  .pipeline-content {
-    display: flex; flex-direction: column; align-items: center; flex: 1; min-width: 0; width: 100%;
-    text-align: center;
-  }
-  .pipeline-header { justify-content: center; flex-direction: column; gap: 0.4rem; }
-  .pipeline-header h3 { font-size: 0.92rem; text-align: center; line-height: 1.2; }
-  .pipeline-date { text-align: center; margin-top: 0.25rem; }
-  .pipeline-assigned { margin-top: 0.3rem; }
-  .btn-expand { align-self: center; margin-top: 0.75rem; }
+  /* hide old bento grid on desktop — replaced by stepper */
+  .pipeline.pipeline-vertical { display: none !important; }
 
-  /* edit modal — premium fixed centered */
-  .pipeline-step .edit-panel.open {
-    position: fixed; top: 50%; left: 50%; right: auto;
-    transform: translate(-50%, -50%);
-    width: min(92vw, 420px); max-width: 92vw;
-    max-height: min(85vh, 640px); overflow-y: auto;
-    opacity: 1; margin-top: 0;
-    background: var(--bg-2); border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 20px; padding: 1.25rem; z-index: 120;
-    box-shadow: var(--shadow-modal);
-    scrollbar-width: thin;
+  .pipeline-stepper-wrap { display: block; }
+  .pipeline-stepper {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    gap: 0.5rem; position: relative;
+    padding: 0 0 1.65rem; max-width: 960px; margin: 0 auto;
   }
-  [data-theme="light"] .pipeline-step .edit-panel.open {
-    background: #FFFFFF; border-color: rgba(0,0,0,0.06);
+  .stepper-line {
+    position: absolute; top: 18px; left: 5%; right: 5%; height: 2px;
+    background: var(--border); border-radius: 999px; z-index: 0;
   }
-  .pipeline-step.expanded { z-index: 90; }
-  .edit-backdrop {
-    position: fixed; inset: 0; z-index: 115;
-    background: rgba(0,0,0,0.48); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  .stepper-node {
+    flex: 1; min-width: 0;
+    display: flex; flex-direction: column; align-items: center; gap: 0.4rem;
+    background: none; border: none; padding: 0; cursor: pointer;
+    position: relative; z-index: 1; text-align: center;
+    transition: opacity 0.15s;
   }
+  .stepper-node:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 10px; }
+  .stepper-dot {
+    width: 36px; height: 36px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-mono); font-weight: 700; font-size: 0.78rem;
+    border: 2px solid var(--border); background: var(--bg-3); color: var(--text-2);
+    transition: transform 0.15s, box-shadow 0.2s, background 0.2s, border-color 0.2s;
+  }
+  .stepper-node:hover .stepper-dot { transform: translateY(-1px); }
+  .node-done .stepper-dot { background: var(--green); color: #000; border-color: var(--green); }
+  .node-active .stepper-dot { background: #D97706; color: #fff; border-color: #D97706; box-shadow: 0 0 0 4px rgba(217,119,6,0.15); }
+  .node-pending .stepper-dot { background: var(--bg-3); color: var(--text-2); border-color: var(--border); }
+  .stepper-title {
+    font-family: var(--font-display); font-size: 0.82rem; font-weight: 600;
+    color: var(--text); line-height: 1.2; max-width: 110px;
+    overflow-wrap: anywhere;
+  }
+  .stepper-date { font-family: var(--font-mono); font-size: 0.62rem; color: var(--text-2); }
+  .pipeline-vertical .edit-panel { display: none !important; }
 }
 
-/* keep centered grid even on ultra-wide */
+/* mobile: hide stepper row, show vertical timeline + detail-stack below */
+@media (max-width: 768px) {
+  .pipeline-stepper { display: none !important; }
+  .stepper-line { display: none !important; }
+  .pipeline.pipeline-vertical { display: block !important; }
+  .detail-stack { max-width: 720px; margin: 0.9rem auto 0; padding: 0; }
+  /* detail-stack on mobile sits above vertical list; give it horizontal padding when open */
+  .pipeline-scroll .detail-stack { padding: 0 max(1rem, 3vw); box-sizing: border-box; }
+  .detail-panel { padding: 1.1rem; }
+}
 @media (min-width: 1100px) {
-  .pipeline { gap: 1.1rem; }
+  .pipeline-stepper { gap: 0.65rem; }
 }
 
 /* ── Action Bar — floating pill centered ── */
