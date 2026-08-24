@@ -108,7 +108,9 @@ input, select, textarea { font-family: inherit; font-size: inherit; }
 .tracker-hero {
   max-width: 680px; margin: 0 auto;
   padding: 2.5rem max(1rem, 3vw) 1.5rem;
-  text-align: center;
+}
+@media (min-width: 769px) {
+  .tracker-hero { text-align: center; }
 }
 .tracker-main { padding-bottom: 6rem; }
 .eyebrow {
@@ -218,40 +220,35 @@ h1 {
   margin-top: 0.3rem; font-style: italic;
 }
 
-/* --- Pipeline horizontal (desktop) --- */
+/* --- Pipeline horizontal (desktop) — stretched edge-to-edge, no scroll --- */
 @media (min-width: 769px) {
   .pipeline-scroll {
-    max-width: 1000px; margin: 0 auto;
-    padding: 0 max(1.5rem, 3vw) 3rem;
-    overflow-x: auto; overflow-y: visible;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: thin; scroll-snap-type: x proximity;
+    max-width: none; width: 100%; margin: 0;
+    padding: 0 clamp(1rem, 3vw, 2.5rem) 3rem;
+    overflow: visible;
   }
   .pipeline {
-    display: flex; gap: 0.75rem;
-    max-width: none; margin: 0; padding: 0 0 1rem;
-    overflow: visible; justify-content: flex-start;
+    display: flex; gap: 0.5rem;
+    max-width: none; width: 100%; margin: 0; padding: 0 0 1rem;
+    overflow: visible; justify-content: space-between;
   }
   .pipeline-step {
-    flex: 0 0 140px; display: flex; flex-direction: column; align-items: center;
-    padding: 0 0.5rem; text-align: center; position: relative;
-    scroll-snap-align: start; min-width: 0;
+    flex: 1; display: flex; flex-direction: column; align-items: center;
+    padding: 0 0.25rem; text-align: center; position: relative;
+    min-width: 0;
   }
   .pipeline-step::before {
-    left: calc(50% + 22px); right: calc(-50% - 0.75rem);
+    left: calc(50% + 20px); right: calc(-50% + 20px);
     top: 15px; bottom: auto; width: auto; height: 2px;
   }
   .pipeline-step:last-child::before { display: none; }
   .pipeline-dot { position: relative; left: auto; top: auto; margin-bottom: 0.6rem; }
   .pipeline-content { display: flex; flex-direction: column; align-items: center; width: 100%; flex: 1; min-width: 0; }
   .pipeline-header { justify-content: center; }
-  .pipeline-header h3 { font-size: 0.85rem; text-align: center; }
+  .pipeline-header h3 { font-size: 0.82rem; text-align: center; line-height: 1.2; max-width: 110px; overflow-wrap: anywhere; }
   .pipeline-date, .pipeline-assigned { text-align: center; }
   .btn-proof { margin-top: 0.4rem; }
   .uploaded-by { margin-top: 0.15rem; }
-}
-@media (min-width: 1100px) {
-  .pipeline { justify-content: center; }
 }
 
 /* --- Badges --- */
