@@ -50,7 +50,8 @@
       @endif
 
       <!-- PIPELINE -->
-      <div class="pipeline">
+      <div class="pipeline-scroll">
+        <div class="pipeline">
         @foreach($stages as $stepName => $gambar)
           @php
             $step = $loop->iteration;
@@ -100,6 +101,7 @@
             </div>
           </div>
         @endforeach
+        </div>
       </div>
     </main>
 

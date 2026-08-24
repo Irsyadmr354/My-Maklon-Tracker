@@ -57,7 +57,8 @@
         $firstIncomplete = null;
       @endphp
 
-      <div class="pipeline pipeline-edit">
+      <div class="pipeline-scroll">
+        <div class="pipeline pipeline-edit">
         @foreach($stages as $stepName => $gambar)
           @php
             $i = $loop->iteration;
@@ -170,6 +171,7 @@
             </div>
           </div>
         @endforeach
+        </div>
       </div>
     </form>
 
@@ -253,12 +255,52 @@
     // Toggle expand/collapse
     function toggleStep(step) {
       const panel = document.getElementById('panel-' + step);
-      const text = document.getElementById('expand-text-' + step);
+      const text  = document.getElementById('expand-text-' + step);
       const stepEl = panel.closest('.pipeline-step');
-      const isOpen = panel.classList.toggle('open');
-      stepEl.classList.toggle('expanded', isOpen);
-      text.textContent = isOpen ? 'Tutup' : 'Edit';
+      const isDesktop = window.matchMedia('(min-width: 769px)').matches;
+      const bd = document.getElementById('editBackdrop');
+
+      if (isDesktop) {
+        const wasOpen = panel.classList.contains('open');
+        // close others
+        document.querySelectorAll('.edit-panel.open').forEach(function(p) {
+          if (p !== panel) {
+            p.classList.remove('open');
+            const pe = p.closest('.pipeline-step');
+            if (pe) pe.classList.remove('expanded');
+            const idx = p.id.replace('panel-','');
+            const t = document.getElementById('expand-text-'+idx);
+            if (t) t.textContent = 'Edit';
+          }
+        });
+        const isOpen = !wasOpen;
+        panel.classList.toggle('open', isOpen);
+        stepEl.classList.toggle('expanded', isOpen);
+        text.textContent = isOpen ? 'Tutup' : 'Edit';
+        if (bd) bd.style.display = document.querySelector('.edit-panel.open') ? 'block' : 'none';
+        document.body.style.overflow = isOpen ? 'hidden' : '';
+      } else {
+        const isOpen = panel.classList.toggle('open');
+        stepEl.classList.toggle('expanded', isOpen);
+        text.textContent = isOpen ? 'Tutup' : 'Edit';
+      }
     }
+    function closeAllEditPanels() {
+      document.querySelectorAll('.edit-panel.open').forEach(function(p) {
+        p.classList.remove('open');
+        const pe = p.closest('.pipeline-step');
+        if (pe) pe.classList.remove('expanded');
+        const idx = p.id.replace('panel-','');
+        const t = document.getElementById('expand-text-'+idx);
+        if (t) t.textContent = 'Edit';
+      });
+      const bd = document.getElementById('editBackdrop');
+      if (bd) bd.style.display = 'none';
+      document.body.style.overflow = '';
+    }
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') closeAllEditPanels();
+    });
 
     // Auto-expand first incomplete step
     document.addEventListener('DOMContentLoaded', function() {
@@ -304,6 +346,8 @@
       if (e.key === 'Escape') cancelUploader();
     });
   </script>
+
+  <div id="editBackdrop" class="edit-backdrop" style="display:none" onclick="closeAllEditPanels()"></div>
 
   <!-- Uploader Name Modal -->
   <div id="uploaderModal" class="uploader-overlay" style="display:none">
