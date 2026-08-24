@@ -18,7 +18,6 @@
     </div>
     <div class="topbar-actions">
       <span class="chip">{{ auth()->user()->no_hp }}</span>
-      <button class="btn-ghost btn-sm" id="btnGuide" onclick="openGuide()">Panduan</button>
       <button class="btn-theme" id="themeToggle" type="button" aria-label="Toggle theme">
         <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
         <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
@@ -45,6 +44,8 @@
         <div class="progress-bar"><div class="progress-fill" style="width: {{ $percent }}%"></div></div>
         <p class="progress-text"><span class="progress-pill">{{ $doneCount }} dari 8 tahap selesai</span></p>
       </div>
+    </section>
+    <div class="customer-switcher-wrap">
       <div class="customer-switcher">
         <label for="customerSearch" class="switcher-label">Pindah Customer — ketik No HP / Email untuk cari</label>
         <div class="switcher-row">
@@ -56,7 +57,7 @@
         </div>
         <p class="switcher-hint">Sedang melihat: <strong>{{ $user->no_hp }}</strong> — {{ $user->email }}</p>
       </div>
-    </section>
+    </div>
 
     <form action="{{ route('progress.update') }}" method="POST" enctype="multipart/form-data" id="adminForm">
       @csrf
@@ -226,8 +227,8 @@
                 <span class="pipeline-assigned">{{ $bukti->assigned_to === 'digital_marketing' ? 'Digital Marketing' : ucfirst($bukti->assigned_to) }}</span>
               @endif
               @if($isAdmin)
-                <button type="button" class="btn-expand" onclick="document.getElementById('panel-{{ $i }}').classList.contains('open') ? toggleStep({{ $i }}) : toggleStep({{ $i }})">
-                  <span class="expand-text">Lihat detail di atas</span>
+                <button type="button" class="btn-expand" onclick="toggleStep({{ $i }})">
+                  <span class="expand-text" id="m-expand-text-{{ $i }}">Lihat detail</span>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
                 </button>
               @endif
@@ -245,6 +246,7 @@
           @else
             <a href="{{ route('customers.index') }}" class="btn-ghost">Kelola Customer</a>
           @endif
+          <button type="button" class="btn-ghost" onclick="openGuide()">Panduan</button>
           <button type="submit" form="adminForm" class="btn-primary" id="saveBtn">Simpan Semua</button>
           <form method="POST" action="{{ route('logout') }}">
             @csrf
@@ -255,6 +257,7 @@
         <div class="alert alert-error" style="max-width:680px;margin:1rem auto;">Anda tidak memiliki akses untuk mengedit data.</div>
         <div class="action-bar">
           <a href="{{ route('customers.index') }}" class="btn-ghost">&larr; Customer</a>
+          <button type="button" class="btn-ghost" onclick="openGuide()">Panduan</button>
           <form method="POST" action="{{ route('logout') }}">
             @csrf
             <button type="submit" class="btn-ghost">Keluar</button>
@@ -319,41 +322,95 @@
       if (step === 7 && value === 'done') alert('Pastikan kirim buktinya di WhatsApp!');
     }
 
-    // Toggle — single open panel in detail-stack, no modal/backdrop
+    // Toggle — PC: detail-stack, HP: dropdown literally below the card
     function toggleStep(step) {
       const panel = document.getElementById('panel-' + step);
       if (!panel) return;
+      const isDesktop = window.matchMedia('(min-width: 769px)').matches;
       const wasOpen = panel.classList.contains('open');
+
+      // close others
       document.querySelectorAll('.detail-panel.open').forEach(function(p) {
         if (p !== panel) {
           p.classList.remove('open');
           const idx = p.id.replace('panel-','');
           const n = document.querySelector('.stepper-node[data-step="' + idx + '"]');
           if (n) n.setAttribute('aria-selected','false');
+          const mt = document.getElementById('m-expand-text-' + idx);
+          if (mt) mt.textContent = 'Lihat detail';
         }
       });
-      // also reset aria for all
       document.querySelectorAll('.stepper-node').forEach(function(n){
         if (parseInt(n.getAttribute('data-step'),10) !== step) n.setAttribute('aria-selected','false');
       });
-      if (wasOpen) {
-        panel.classList.remove('open');
-        const sn = document.querySelector('.stepper-node[data-step="' + step + '"]');
-        if (sn) sn.setAttribute('aria-selected','false');
+
+      if (isDesktop) {
+        // ensure panel is in detail-stack for PC
+        const ds = document.querySelector('.detail-stack');
+        if (ds && panel.parentElement !== ds) ds.appendChild(panel);
+        if (wasOpen) {
+          panel.classList.remove('open');
+          const sn = document.querySelector('.stepper-node[data-step="' + step + '"]');
+          if (sn) sn.setAttribute('aria-selected','false');
+        } else {
+          panel.classList.add('open');
+          const sn = document.querySelector('.stepper-node[data-step="' + step + '"]');
+          if (sn) sn.setAttribute('aria-selected','true');
+          try { panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch(e){}
+        }
+        const mt = document.getElementById('m-expand-text-' + step);
+        if (mt) mt.textContent = wasOpen ? 'Lihat detail' : 'Lihat detail';
       } else {
-        panel.classList.add('open');
-        const sn = document.querySelector('.stepper-node[data-step="' + step + '"]');
-        if (sn) sn.setAttribute('aria-selected','true');
-        // smooth scroll into view on mobile/any
-        try { panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch(e){}
+        // HP: move panel to directly below the tapped vertical card (dropdown)
+        const vCard = document.querySelector('.pipeline-vertical .pipeline-step[data-step="' + step + '"]');
+        const mText = document.getElementById('m-expand-text-' + step);
+        if (!vCard) {
+          // fallback: toggle in place
+          if (wasOpen) {
+            panel.classList.remove('open');
+            if (mText) mText.textContent = 'Lihat detail';
+          } else {
+            panel.classList.add('open');
+            if (mText) mText.textContent = 'Tutup';
+          }
+          return;
+        }
+        if (wasOpen) {
+          panel.classList.remove('open');
+          if (mText) mText.textContent = 'Lihat detail';
+          // keep it after card but hidden — no need to move back
+        } else {
+          // move panel to after this card so it drops down below it
+          if (panel.parentElement !== vCard.parentElement || panel.previousElementSibling !== vCard) {
+            vCard.parentNode.insertBefore(panel, vCard.nextSibling);
+          }
+          panel.classList.add('open');
+          if (mText) mText.textContent = 'Tutup';
+          try { panel.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch(e){}
+        }
+        // reset other mobile texts
+        document.querySelectorAll('[id^="m-expand-text-"]').forEach(function(t){
+          const idx = parseInt(t.id.replace('m-expand-text-',''),10);
+          if (idx !== step) t.textContent = 'Lihat detail';
+        });
       }
       const bd = document.getElementById('editBackdrop');
       if (bd) bd.style.display = 'none';
       document.body.style.overflow = '';
     }
     function closeAllEditPanels() {
-      document.querySelectorAll('.detail-panel.open').forEach(function(p){ p.classList.remove('open'); });
+      document.querySelectorAll('.detail-panel.open').forEach(function(p){
+        p.classList.remove('open');
+        // move back to detail-stack for PC consistency
+        const ds = document.querySelector('.detail-stack');
+        if (ds && p.parentElement !== ds) {
+          // only move back if currently after a vertical card and we are on desktop? Keep in place for mobile hidden is fine
+          // move back to stack so next desktop open is in correct place
+          if (window.matchMedia('(min-width: 769px)').matches) ds.appendChild(p);
+        }
+      });
       document.querySelectorAll('.stepper-node').forEach(function(n){ n.setAttribute('aria-selected','false'); });
+      document.querySelectorAll('[id^="m-expand-text-"]').forEach(function(t){ t.textContent = 'Lihat detail'; });
       const bd = document.getElementById('editBackdrop');
       if (bd) bd.style.display = 'none';
       document.body.style.overflow = '';
@@ -413,6 +470,13 @@
       const m = document.getElementById('guideModal');
       if (m) { m.style.display = 'none'; document.body.style.overflow = ''; }
     }
+    function filterGuide(q) {
+      const needle = (q || '').toLowerCase().trim();
+      document.querySelectorAll('.guide-steps li').forEach(function(li){
+        const hay = ((li.getAttribute('data-keywords') || '') + ' ' + li.textContent).toLowerCase();
+        li.style.display = !needle || hay.includes(needle) ? '' : 'none';
+      });
+    }
     document.addEventListener('keydown', function(e) { if (e.key === 'Escape') { const gm = document.getElementById('guideModal'); if (gm && gm.style.display !== 'none') closeGuide(); } });
     document.addEventListener('DOMContentLoaded', function() {
       const gm = document.getElementById('guideModal');
@@ -457,17 +521,26 @@
 
 <div id="guideModal" class="guide-overlay" style="display:none" role="dialog" aria-modal="true">
   <div class="guide-card">
-    <h3>Panduan Admin — Madu Wild Bee</h3>
-    <p class="guide-sub">Untuk staf non-IT. Ikuti langkah 1→5.</p>
+    <button class="guide-close" type="button" onclick="closeGuide()" aria-label="Tutup panduan">✕</button>
+    <div class="guide-head">
+      <div class="guide-icon" aria-hidden="true">🐝</div>
+      <div>
+        <h3>Panduan Admin</h3>
+        <p class="guide-sub">Madu Wild Bee — 5 langkah untuk staf awam. Klik langkah untuk loncat ke pipeline.</p>
+      </div>
+    </div>
+    <div class="guide-search">
+      <input id="guideSearch" type="text" placeholder="Cari: login, tambah customer, upload bukti..." oninput="filterGuide(this.value)" autocomplete="off">
+    </div>
     <ol class="guide-steps">
-      <li><strong>Login</strong> — buka <code>/login</code>, masuk pakai <em>No HP</em> + <em>Kata Sandi</em> admin (No HP = ADMIN_PHONE di .env). Jika baru, pakai No HP admin untuk aktivasi pertama.</li>
-      <li><strong>Lihat Daftar Customer</strong> — klik <em>Kelola Customer</em> di bawah (atau buka <code>/admin/customers</code>). Di sana: <em>Tambah Customer baru</em> (isi Email, No HP login customer, Kata Sandi) → <em>Tambah</em>. Cari customer via kolom search.</li>
-      <li><strong>Buka Tracker Customer</strong> — klik <em>Progres</em> pada card customer (atau pakai switcher searchable di bawah judul Kelola Pesanan). Anda akan di <code>/admin/customers/{id}</code>.</li>
-      <li><strong>Edit Progress</strong> — di pipeline 8 tahap (Konsultasi→Kesimpulan), klik node tahap → panel detail muncul di bawah. Ubah <em>Status</em> (Selesai/Dikerjakan/Ditunda), <em>Tanggung Jawab</em>, <em>Tanggal</em>, upload <em>Bukti</em> (jpg/png/pdf) jika Selesai. Step 7 (Foto Video) auto reminder WhatsApp. Klik <em>Simpan Semua</em> di pill bawah.</li>
-      <li><strong>Selesai</strong> — customer login pakai <em>No HP-nya</em> di <code>/order-tracker</code> hanya bisa lihat (read-only). Jika perlu ganti No HP/Password customer: di <code>/admin/customers</code> klik <em>Kelola</em> pada card → ubah No HP/Password → Simpan.</li>
+      <li data-keywords="login no hp kata sandi admin phone"><span class="step-num">1</span><div><strong>Login</strong> — buka <code>/login</code>, masuk pakai <em>No HP</em> + <em>Kata Sandi</em> admin. <span class="muted">No HP admin = <code>ADMIN_PHONE</code> di .env. Akun baru? Masukkan No HP-nya + buat kata sandi untuk aktivasi.</span></div></li>
+      <li data-keywords="daftar kelola customer tambah email search"><span class="step-num">2</span><div><strong>Lihat Daftar Customer</strong> — pill bawah klik <em>Kelola Customer</em> atau buka <code>/admin/customers</code>. <em>Tambah Customer</em>: isi Email, <em>No HP login</em>, Kata Sandi → <em>Tambah</em>. Pakai kolom di atas daftar untuk cari.</div></li>
+      <li data-keywords="buka tracker progres pindah switcher"><span class="step-num">3</span><div><strong>Buka Tracker</strong> — klik <em>Progres</em> di card, atau pakai <em>Pindah Customer</em> (di bawah Kelola Pesanan, ketik No HP/Email → <em>Buka</em>). Akan ke <code>/admin/customers/{id}</code> yang stretched dari ujung ke ujung.</div></li>
+      <li data-keywords="edit pipeline status tanggung jawab tanggal bukti upload selesai ditunda dikerjakan"><span class="step-num">4</span><div><strong>Edit Progress (PC: klik node, HP: dropdown di bawah card)</strong> — pipeline 8 tahap <em>Konsultasi → Kesimpulan</em> stretched. Klik node → panel muncul <strong>tepat di bawah card yang diklik</strong> (HP: dropdown, PC: di bawah stepper). Ubah <em>Status</em> (Selesai/Dikerjakan/Ditunda), <em>Tanggung Jawab</em>, <em>Tanggal</em>, upload <em>Bukti</em> (jpg/png/pdf, muncul hanya jika Selesai). Step 7 reminder WhatsApp. Lalu <em>Simpan Semua</em> di pill bawah.</div></li>
+      <li data-keywords="selesai read only ganti password"><span class="step-num">5</span><div><strong>Selesai & Ganti Akun</strong> — customer cek di <code>/order-tracker</code> (hanya lihat). Ganti No HP/Password: kembali ke <code>/admin/customers</code> → <em>Kelola</em> pada card → ubah → <em>Simpan</em>.</div></li>
     </ol>
-    <p class="guide-tip">Tips: Field di bawah “Kelola Pesanan” bisa diketik untuk cari & pindah customer tanpa kembali ke daftar.</p>
-    <div class="guide-actions"><button class="btn-primary" onclick="closeGuide()">Mengerti</button></div>
+    <div class="guide-tip"><strong>Tips:</strong> Pipeline PC sekarang stretched dari angka 1 sampai 8 tanpa scroll. Di HP, tombol <em>Lihat detail</em> akan membuka dropdown di bawah card itu — tidak lagi “lihat di atas”.</div>
+    <div class="guide-actions"><button class="btn-primary" type="button" onclick="closeGuide()">Mengerti, tutup</button><span class="guide-hint">Tekan Esc atau klik luar untuk tutup</span></div>
   </div>
 </div>
 

@@ -549,9 +549,15 @@ details[open] .add-toggle { border-bottom: 1px solid var(--border); }
   margin-top: 0.3rem; font-style: italic;
 }
 
-/* ── Customer Switcher (searchable) ── */
+/* ── Customer Switcher (searchable) — stretched following pipeline numbers ── */
+.customer-switcher-wrap {
+  max-width: none; width: 100%;
+  padding: 0 clamp(1rem, 3vw, 2.5rem);
+  margin: 1.2rem 0 0;
+  box-sizing: border-box;
+}
 .customer-switcher {
-  max-width: 560px; margin: 1.2rem auto 0;
+  max-width: none; width: 100%; margin: 0;
   background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-card);
   padding: 1rem 1.1rem; text-align: left;
   box-shadow: var(--shadow-card);
@@ -573,44 +579,80 @@ details[open] .add-toggle { border-bottom: 1px solid var(--border); }
   font-size: 0.75rem; color: var(--text-2); margin-top: 0.5rem;
 }
 @media (max-width: 768px) {
-  .customer-switcher { margin: 1rem max(1rem, 3vw) 0; max-width: none; }
+  .customer-switcher-wrap { padding: 0 max(1rem, 3vw) 0 52px; }
 }
 
-/* ── Guide Modal ── */
+/* ── Guide Modal — premium readable ── */
 .guide-overlay {
   position: fixed; inset: 0; z-index: 210;
-  background: rgba(0,0,0,0.55); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  background: rgba(0,0,0,0.58); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
   display: flex; align-items: center; justify-content: center;
   padding: 1rem;
 }
 .guide-card {
+  position: relative;
   background: var(--surface); border: 1px solid var(--border); border-radius: 20px;
-  padding: 1.5rem; max-width: 560px; width: 100%;
-  max-height: min(86vh, 720px); overflow: auto;
+  padding: 1.4rem 1.4rem 1.1rem; max-width: 600px; width: 100%;
+  max-height: min(86vh, 760px); overflow: auto;
   box-shadow: var(--shadow-modal);
   text-align: left;
 }
-.guide-card h3 {
-  font-family: var(--font-display); font-size: 1.25rem; font-weight: 400; margin-bottom: 0.25rem;
+.guide-close {
+  position: absolute; top: 0.9rem; right: 0.9rem;
+  width: 32px; height: 32px; border-radius: 999px;
+  border: 1px solid var(--border); background: var(--bg-2); color: var(--text-2);
+  display: flex; align-items: center; justify-content: center; font-size: 0.9rem;
 }
-.guide-sub { font-size: 0.82rem; color: var(--text-2); margin-bottom: 0.9rem; }
+.guide-close:hover { border-color: var(--accent); color: var(--accent); }
+.guide-head {
+  display: flex; gap: 0.9rem; align-items: flex-start;
+  padding-right: 2rem; margin-bottom: 0.9rem;
+  border-bottom: 1px solid var(--border); padding-bottom: 0.9rem;
+}
+.guide-icon {
+  width: 42px; height: 42px; border-radius: 12px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--gold-bg); border: 1px solid rgba(212,168,67,0.18); font-size: 1.25rem;
+}
+.guide-card h3 {
+  font-family: var(--font-display); font-size: 1.35rem; font-weight: 400; line-height: 1.1; margin-bottom: 0.2rem;
+}
+.guide-sub { font-size: 0.82rem; color: var(--text-2); line-height: 1.5; }
+.guide-search { margin-bottom: 0.9rem; }
+.guide-search input {
+  width: 100%; padding: 0.6rem 0.85rem; border-radius: 12px;
+  background: var(--bg-2); border: 1.5px solid var(--border); color: var(--text); font-size: 0.85rem;
+}
+.guide-search input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--gold-bg); }
 .guide-steps {
-  margin: 0; padding-left: 1.25rem;
-  display: flex; flex-direction: column; gap: 0.65rem;
-  font-size: 0.88rem; line-height: 1.55; color: var(--text);
+  margin: 0; padding: 0; list-style: none;
+  display: flex; flex-direction: column; gap: 0.7rem;
+}
+.guide-steps li {
+  display: flex; gap: 0.75rem; align-items: flex-start;
+  background: var(--bg-2); border: 1px solid var(--border); border-radius: 14px;
+  padding: 0.85rem 0.9rem; font-size: 0.88rem; line-height: 1.6; color: var(--text);
 }
 .guide-steps li strong { color: var(--accent); }
+.guide-steps li .muted { color: var(--text-2); font-size: 0.85rem; }
 .guide-steps code {
-  font-family: var(--font-mono); font-size: 0.78rem;
-  background: var(--bg-2); border: 1px solid var(--border);
-  padding: 0.1rem 0.35rem; border-radius: 6px;
+  font-family: var(--font-mono); font-size: 0.76rem;
+  background: var(--surface); border: 1px solid var(--border);
+  padding: 0.12rem 0.38rem; border-radius: 6px;
+}
+.step-num {
+  width: 26px; height: 26px; border-radius: 999px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--accent); color: #000; font-family: var(--font-mono); font-weight: 700; font-size: 0.78rem;
+  margin-top: 0.05rem;
 }
 .guide-tip {
-  margin-top: 1rem; padding: 0.7rem 0.9rem;
-  background: var(--gold-bg); border: 1px solid rgba(212,168,67,0.18); border-radius: var(--radius);
-  font-size: 0.82rem; color: var(--text-2); line-height: 1.5;
+  margin-top: 0.9rem; padding: 0.75rem 0.9rem;
+  background: var(--gold-bg); border: 1px solid rgba(212,168,67,0.2); border-radius: 12px;
+  font-size: 0.83rem; color: var(--text-2); line-height: 1.5;
 }
-.guide-actions { display: flex; justify-content: flex-end; margin-top: 1.1rem; }
+.guide-actions { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; margin-top: 1rem; flex-wrap: wrap; }
+.guide-hint { font-family: var(--font-mono); font-size: 0.68rem; color: var(--text-2); }
 
 /* ── Mobile polish ── */
 @media (max-width: 520px) {
@@ -624,6 +666,7 @@ details[open] .add-toggle { border-bottom: 1px solid var(--border); }
   .pipeline { padding-left: 38px; }
   .pipeline::before { left: 12px; }
   .pipeline-dot { left: -38px; width: 28px; height: 28px; font-size: 0.7rem; }
+  .customer-switcher-wrap { padding: 0 0.75rem 0 38px; }
   .status-buttons { flex-direction: column; }
   .status-btn { min-height: 48px; }
   .pipeline-step { padding: 1.1rem; }
@@ -645,5 +688,6 @@ details[open] .add-toggle { border-bottom: 1px solid var(--border); }
   .pipeline { padding-left: 34px; }
   .pipeline::before { left: 10px; }
   .pipeline-dot { left: -34px; width: 26px; height: 26px; }
+  .customer-switcher-wrap { padding: 0 0.5rem 0 34px; }
   .page-header h1 { font-size: 1.5rem; }
 }
