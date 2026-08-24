@@ -216,6 +216,32 @@ h1 {
   margin-top: 0.3rem; font-style: italic;
 }
 
+/* --- Pipeline horizontal (desktop) --- */
+@media (min-width: 769px) {
+  .pipeline {
+    display: flex; gap: 0; max-width: 960px;
+    padding: 0 2rem 3rem; justify-content: center;
+  }
+  .pipeline-step {
+    flex: 1; display: flex; flex-direction: column; align-items: center;
+    padding: 2.5rem 0.5rem 0; text-align: center; position: relative;
+  }
+  .pipeline-step::before {
+    left: calc(50% + 20px); right: calc(-50% + 20px);
+    top: 15px; bottom: auto; width: auto; height: 2px;
+  }
+  .pipeline-step:last-child::before { display: none; }
+  .pipeline-dot {
+    position: relative; left: auto; top: auto;
+    width: 32px; height: 32px; margin-bottom: 0.6rem;
+  }
+  .pipeline-content { display: flex; flex-direction: column; align-items: center; }
+  .pipeline-header { justify-content: center; }
+  .pipeline-header h3 { font-size: 0.9rem; }
+  .pipeline-date, .pipeline-assigned { text-align: center; }
+  .btn-proof { margin-top: 0.4rem; }
+}
+
 /* --- Badges --- */
 .badge {
   font-family: var(--font-mono);
@@ -318,6 +344,12 @@ h1 {
   .pipeline-content { min-width: 0; }
   html, body { overflow-x: hidden; width: 100%; }
   *, *::before, *::after { word-wrap: break-word; overflow-wrap: break-word; }
+  .pipeline { max-width: 680px; }
+  .pipeline-step { display: flex; gap: 1rem; padding: 1rem 0 1rem 2.5rem; }
+  .pipeline-step::before { left: 15px; top: 0; bottom: 0; width: 2px; height: auto; }
+  .pipeline-dot { position: absolute; left: 0; top: 1rem; }
+  .pipeline-content { flex: 1; }
+  .pipeline-header { justify-content: flex-start; }
 }
 
 @media (prefers-reduced-motion: reduce) {
